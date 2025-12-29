@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, nextTick } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
 import type { Wallpaper } from "@/types/wallhaven";
@@ -86,8 +86,11 @@ async function loadFavorites() {
 		}
 
 		favorites.value = wallpapers;
+		
+		// 使用 nextTick 确保 v-if 条件变化后瀑布流组件渲染完成
+		await nextTick();
 		waterfallRef.value?.clear();
-		waterfallRef.value?.append(wallpapers);
+		waterfallRef.value?.append(wallpapers as unknown as UTSJSONObject[]);
 	} catch (err: any) {
 		ui.showToast({
 			message: err.message || "加载失败"
