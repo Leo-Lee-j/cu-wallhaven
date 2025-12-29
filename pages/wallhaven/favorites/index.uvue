@@ -1,0 +1,136 @@
+<template>
+	<cl-page>
+		<view class="p-2" v-if="favorites.length > 0">
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+				<template #item="{ item }">
+					<view
+						class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3 relative"
+						@tap="toDetail(item as Wallpaper)"
+					>
+						<image
+							:src="item['thumbs']['small']"
+							mode="widthFix"
+							class="w-full"
+							:lazy-load="true"
+						></image>
+
+						<!-- 取消收藏按钮 -->
+						<view
+							class="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center"
+							@tap.stop="removeFavorite(item as Wallpaper)"
+						>
+							<cl-icon name="heart-fill" :size="28" color="#ef4444"></cl-icon>
+						</view>
+
+						<view class="p-2 flex flex-row items-center justify-between">
+							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
+								{{ item['resolution'] }}
+							</cl-text>
+						</view>
+					</view>
+				</template>
+			</cl-waterfall>
+
+			<cl-loadmore :loading="loading" :finished="true" safe-area-bottom></cl-loadmore>
+		</view>
+
+		<!-- 空状态 -->
+		<view class="flex flex-col items-center justify-center h-[60vh]" v-else>
+			<cl-icon name="heart-line" :size="120" color="gray"></cl-icon>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">暂无收藏</cl-text>
+			<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">浏览壁纸时点击心形图标添加收藏</cl-text>
+		</view>
+	</cl-page>
+</template>
+
+<script lang="ts" setup>
+import { ref, onMounted } from "vue";
+import { router, useStore } from "@/cool";
+import { useUi } from "@/uni_modules/cool-ui";
+import type { Wallpaper } from "@/types/wallhaven";
+
+const ui = useUi();
+const { wallhaven } = useStore();
+
+// 瀑布流引用
+const waterfallRef = ref<ClWaterfallComponentPublicInstance | null>(null);
+
+// 收藏列表
+const favorites = ref<Wallpaper[]>([]);
+
+// 加载状态
+const loading = ref(false);
+
+// 加载收藏的壁纸详情
+async function loadFavorites() {
+	const ids = wallhaven.localFavorites.value;
+
+	if (ids.length === 0) {
+		favorites.value = [];
+		return;
+	}
+
+	loading.value = true;
+
+	try {
+		const wallpapers: Wallpaper[] = [];
+
+		for (const id of ids) {
+			try {
+				const wp = await wallhaven.getWallpaper(id);
+				wallpapers.push(wp);
+			} catch (err) {
+				// 忽略单个加载失败
+				console.error(`Failed to load wallpaper ${id}`, err);
+			}
+		}
+
+		favorites.value = wallpapers;
+		waterfallRef.value?.clear();
+		waterfallRef.value?.append(wallpapers);
+	} catch (err: any) {
+		ui.showToast({
+			message: err.message || "加载失败"
+		});
+	} finally {
+		loading.value = false;
+	}
+}
+
+// 跳转到详情页
+function toDetail(item: Wallpaper) {
+	router.to(`/pages/wallhaven/detail/index?id=${item.id}`);
+}
+
+// 取消收藏
+function removeFavorite(item: Wallpaper) {
+	ui.showConfirm({
+		title: "提示",
+		message: "确定取消收藏吗？",
+		callback(action) {
+			if (action === "confirm") {
+				wallhaven.removeFavorite(item.id);
+
+				// 从列表中移除
+				const index = favorites.value.findIndex((w) => w.id === item.id);
+				if (index > -1) {
+					favorites.value.splice(index, 1);
+					waterfallRef.value?.remove(item.id);
+				}
+
+				ui.showToast({ message: "已取消收藏" });
+			}
+		}
+	});
+}
+
+// 页面显示时刷新
+// onShow(() => {
+// 	loadFavorites();
+// });
+
+// 初始化
+onMounted(() => {
+	loadFavorites();
+});
+</script>

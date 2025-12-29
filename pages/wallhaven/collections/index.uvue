@@ -1,0 +1,117 @@
+<template>
+	<cl-page>
+		<!-- 收藏夹列表 -->
+		<view class="p-3" v-if="collections.length > 0">
+			<cl-list>
+				<cl-list-item
+					v-for="item in collections"
+					:key="item.id"
+					:label="item.label"
+					arrow
+					hoverable
+					@tap="toCollection(item)"
+				>
+					<template #prepend>
+						<cl-icon name="folder-line" :size="40"></cl-icon>
+					</template>
+					<cl-text :pt="{ className: 'text-surface-400 text-sm' }">
+						{{ item.count }} 张壁纸
+					</cl-text>
+				</cl-list-item>
+			</cl-list>
+		</view>
+
+		<!-- 加载中 -->
+		<view class="flex flex-col items-center justify-center h-[60vh]" v-else-if="loading">
+			<cl-loading></cl-loading>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">加载中...</cl-text>
+		</view>
+
+		<!-- 空状态 -->
+		<view class="flex flex-col items-center justify-center h-[60vh]" v-else-if="!hasApiKey">
+			<cl-icon name="key-line" :size="120" color="gray"></cl-icon>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">需要配置 API Key</cl-text>
+			<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">请在设置中配置 Wallhaven API Key</cl-text>
+			<cl-button
+				type="primary"
+				:pt="{ className: 'mt-4' }"
+				@tap="toSettings"
+			>去设置</cl-button>
+		</view>
+
+		<!-- 无收藏夹 -->
+		<view class="flex flex-col items-center justify-center h-[60vh]" v-else>
+			<cl-icon name="folder-line" :size="120" color="gray"></cl-icon>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">暂无收藏夹</cl-text>
+		</view>
+	</cl-page>
+</template>
+
+<script lang="ts" setup>
+import { ref, computed, onMounted } from "vue";
+import { router, useStore } from "@/cool";
+import { useUi } from "@/uni_modules/cool-ui";
+import type { Collection } from "@/types/wallhaven";
+
+const ui = useUi();
+const { wallhaven } = useStore();
+
+// 收藏夹列表
+const collections = ref<Collection[]>([]);
+
+// 加载状态
+const loading = ref(false);
+
+// 是否配置了 API Key
+const hasApiKey = computed(() => {
+	return wallhaven.apiKey.value !== "";
+});
+
+// 加载收藏夹列表
+async function loadCollections() {
+	if (!hasApiKey.value) return;
+
+	loading.value = true;
+
+	try {
+		const username = wallhaven.username.value || undefined;
+		collections.value = await wallhaven.getCollections(username);
+	} catch (err: any) {
+		ui.showToast({
+			message: err.message || "加载失败"
+		});
+	} finally {
+		loading.value = false;
+	}
+}
+
+// 跳转到收藏夹内容
+function toCollection(item: Collection) {
+	const username = wallhaven.username.value;
+	if (!username) {
+		ui.showToast({ message: "请先设置用户名" });
+		return;
+	}
+	// TODO: 实现收藏夹内容页面
+	ui.showToast({ message: `查看收藏夹: ${item.label}` });
+}
+
+// 跳转到设置
+function toSettings() {
+	router.to("/pages/wallhaven/settings/index");
+}
+
+// 页面显示时刷新
+// onShow(() => {
+// 	if (hasApiKey.value) {
+// 		loadCollections();
+// 	}
+// });
+
+// 初始化
+onMounted(() => {
+	if (hasApiKey.value) {
+		loadCollections();
+	}
+});
+</script>
