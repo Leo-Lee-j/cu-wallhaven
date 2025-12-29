@@ -706,4 +706,12 @@ onMounted(() => {
 		opacity: 0.8;
 	}
 }
+
+// 覆盖抽屉高度，使其撑满屏幕
+:deep(.cl-popup-wrapper--left),
+:deep(.cl-popup-wrapper--right) {
+	.cl-popup {
+		height: 100% !important;
+	}
+}
 </style>
