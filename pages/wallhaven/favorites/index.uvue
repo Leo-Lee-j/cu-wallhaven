@@ -1,6 +1,13 @@
 <template>
 	<cl-page>
-		<view class="p-2" v-if="favorites.length > 0">
+		<!-- 加载中状态 -->
+		<view class="flex flex-col items-center justify-center h-[60vh]" v-if="loading && favorites.length === 0">
+			<cl-loading :size="80"></cl-loading>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">正在加载收藏...</cl-text>
+		</view>
+
+		<!-- 有数据状态 -->
+		<view class="p-2" v-else-if="favorites.length > 0">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
 				<template #item="{ item }">
 					<view
