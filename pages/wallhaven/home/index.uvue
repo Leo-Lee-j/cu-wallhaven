@@ -125,53 +125,74 @@
 		<cl-popup
 			v-model="leftDrawerVisible"
 			direction="left"
-			size="70%"
+			size="75%"
 			:show-header="false"
 		>
-			<view class="flex flex-col h-full">
-				<!-- 用户信息区域 -->
-				<view class="p-5 pt-[80rpx] bg-primary-500">
-					<cl-avatar :size="120" src="" icon="user-line"></cl-avatar>
-					<cl-text :pt="{ className: 'mt-3 text-white text-lg' }">
-						{{ store.username || '未设置用户名' }}
+			<view class="flex flex-col h-full bg-surface-50 dark:!bg-surface-900">
+				<!-- 用户信息区域 - 渐变背景 -->
+				<view class="drawer-header px-5 pt-[100rpx] pb-6 flex flex-col items-center">
+					<cl-avatar
+						:size="140"
+						src=""
+						icon="user-line"
+						:pt="{ className: 'border-4 border-white/20' }"
+					></cl-avatar>
+					<cl-text :pt="{ className: 'mt-4 text-white text-lg font-medium' }">
+						{{ store.username.value || '未设置用户名' }}
+					</cl-text>
+					<cl-text
+						v-if="store.apiKey.value"
+						:pt="{ className: 'mt-1 text-white/70 text-xs' }"
+					>
+						API Key 已配置
 					</cl-text>
 				</view>
 
 				<!-- 菜单列表 -->
-				<scroll-view scroll-y class="flex-1">
-					<cl-list>
-						<cl-list-item
-							label="在线收藏夹"
-							icon="folder-line"
-							arrow
-							hoverable
-							@tap="toCollections"
-						></cl-list-item>
-						<cl-list-item
-							label="本地收藏夹"
-							icon="heart-line"
-							arrow
-							hoverable
-							@tap="toFavorites"
-						></cl-list-item>
-					</cl-list>
+				<scroll-view scroll-y class="flex-1 py-3">
+					<view class="px-3">
+						<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">收藏</cl-text>
+						<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
+							<cl-list-item
+								label="在线收藏夹"
+								icon="folder-line"
+								arrow
+								hoverable
+								@tap="toCollections"
+								:pt="{ icon: { color: '#6366f1' } }"
+							></cl-list-item>
+							<cl-list-item
+								label="本地收藏夹"
+								icon="heart-line"
+								arrow
+								hoverable
+								@tap="toFavorites"
+								:pt="{ icon: { color: '#ef4444' } }"
+							></cl-list-item>
+						</view>
+					</view>
 
-					<cl-list :pt="{ className: 'mt-3' }">
-						<cl-list-item
-							label="设置"
-							icon="settings-line"
-							arrow
-							hoverable
-							@tap="toSettings"
-						></cl-list-item>
-						<cl-list-item
-							label="关于"
-							icon="information-line"
-							arrow
-							hoverable
-							@tap="toAbout"
-						></cl-list-item>
-					</cl-list>
+					<view class="px-3 mt-4">
+						<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">更多</cl-text>
+						<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
+							<cl-list-item
+								label="设置"
+								icon="settings-line"
+								arrow
+								hoverable
+								@tap="toSettings"
+								:pt="{ icon: { color: '#8b5cf6' } }"
+							></cl-list-item>
+							<cl-list-item
+								label="关于"
+								icon="information-line"
+								arrow
+								hoverable
+								@tap="toAbout"
+								:pt="{ icon: { color: '#06b6d4' } }"
+							></cl-list-item>
+						</view>
+					</view>
 				</scroll-view>
 
 				<cl-safe-area type="bottom"></cl-safe-area>
@@ -713,5 +734,10 @@ onMounted(() => {
 	.cl-popup {
 		height: 100% !important;
 	}
+}
+
+// 抽屉头部渐变背景
+.drawer-header {
+	background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
 }
 </style>
