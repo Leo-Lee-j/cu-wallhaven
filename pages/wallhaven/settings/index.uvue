@@ -3,7 +3,7 @@
 		<view class="p-4">
 			<!-- API Key 输入 -->
 			<view class="mb-6">
-				<cl-text :pt="{ className: 'text-sm font-medium mb-2' }">API Key</cl-text>
+				<cl-text :pt="{ className: 'text-sm font-bold mb-2' }">API Key</cl-text>
 				<cl-input
 					v-model="formData.apiKey"
 					placeholder="请输入 Wallhaven API Key"
@@ -17,7 +17,7 @@
 
 			<!-- 用户名输入 -->
 			<view class="mb-6">
-				<cl-text :pt="{ className: 'text-sm font-medium mb-2' }">用户名</cl-text>
+				<cl-text :pt="{ className: 'text-sm font-bold mb-2' }">用户名</cl-text>
 				<cl-input
 					v-model="formData.username"
 					placeholder="请输入 Wallhaven 用户名"

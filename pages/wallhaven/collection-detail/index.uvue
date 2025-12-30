@@ -55,7 +55,7 @@
 
 		<!-- 加载中状态 -->
 		<view
-			class="flex flex-col items-center justify-center h-[60vh]"
+			class="flex flex-col items-center justify-center h-[450px]"
 			v-if="wallpapers.length === 0 && loading"
 		>
 			<cl-loading></cl-loading>
@@ -64,7 +64,7 @@
 
 		<!-- 空状态 -->
 		<view
-			class="flex flex-col items-center justify-center h-[60vh]"
+			class="flex flex-col items-center justify-center h-[450px]"
 			v-if="wallpapers.length === 0 && !loading && !error"
 		>
 			<cl-icon name="image-line" :size="120" color="gray"></cl-icon>
@@ -73,7 +73,7 @@
 
 		<!-- 错误状态 -->
 		<view
-			class="flex flex-col items-center justify-center h-[60vh]"
+			class="flex flex-col items-center justify-center h-[450px]"
 			v-if="error"
 		>
 			<cl-icon name="error-warning-line" :size="120" color="gray"></cl-icon>
@@ -201,19 +201,3 @@ onLoad((options: Record<string, any>) => {
 });
 </script>
 
-<style lang="scss" scoped>
-.wallpaper-container {
-	animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(10px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
-</style>

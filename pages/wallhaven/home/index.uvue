@@ -137,7 +137,7 @@
 						icon="user-line"
 						:pt="{ className: 'border-4 border-white/20' }"
 					></cl-avatar>
-					<cl-text :pt="{ className: 'mt-4 text-white text-lg font-medium' }">
+					<cl-text :pt="{ className: 'mt-4 text-white text-lg font-bold' }">
 						{{ store.username.value || '未设置用户名' }}
 					</cl-text>
 					<cl-text
@@ -833,24 +833,7 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-.search-history-container {
-	animation: fadeIn 0.2s ease-out;
-}
-
-.wallpaper-container {
-	animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-		transform: translateY(10px);
-	}
-	to {
-		opacity: 1;
-		transform: translateY(0);
-	}
-}
+/* uvue 不支持 @keyframes 动画，已移除 */
 
 .history-tag {
 	transition: all 0.2s ease;
