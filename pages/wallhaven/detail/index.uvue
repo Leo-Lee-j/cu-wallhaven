@@ -88,7 +88,7 @@
 					</cl-list>
 
 					<!-- 标签 -->
-					<view class="mt-3" v-if="wallpaper!.tags && wallpaper!.tags.length > 0">
+					<view class="mt-3" v-if="wallpaper!.tags != null && wallpaper!.tags!.length > 0">
 						<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">标签</cl-text>
 						<view class="flex flex-row flex-wrap">
 							<cl-tag
@@ -101,7 +101,7 @@
 					</view>
 
 					<!-- 颜色 -->
-					<view class="mt-3 pb-2" v-if="wallpaper!.colors && wallpaper!.colors.length > 0">
+					<view class="mt-3 pb-2" v-if="wallpaper!.colors != null && wallpaper!.colors!.length > 0">
 						<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">主要颜色</cl-text>
 						<view class="flex flex-row flex-wrap">
 							<view
