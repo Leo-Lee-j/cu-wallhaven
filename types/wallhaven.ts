@@ -9,13 +9,8 @@ export type WallpaperThumbs = {
 	small: string;
 };
 
-// 头像尺寸
-export type WallpaperAvatarSizes = {
-	"200px": string;
-	"128px": string;
-	"32px": string;
-	"20px": string;
-};
+// 头像尺寸 (使用 Record 类型避免数字开头的键名导致 UTS 编译错误)
+export type WallpaperAvatarSizes = Record<string, string>;
 
 // 上传者信息
 export type WallpaperUploader = {
