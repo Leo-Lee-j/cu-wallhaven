@@ -114,6 +114,8 @@ export type FilterForm = {
 	sorting: string;
 	topRange: string;
 	ratios: string[];
+	wallpaperType: 'all' | 'pc' | 'mobile'; // 壁纸类型: 全部/PC/手机
+	colors: string[]; // 颜色代码数组
 };
 
 // Wallhaven Store 状态

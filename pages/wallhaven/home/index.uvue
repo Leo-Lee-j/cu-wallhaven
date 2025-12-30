@@ -389,6 +389,89 @@
 							</cl-row>
 						</cl-form-item>
 
+				<!-- 壁纸类型 -->
+				<cl-form-item label="壁纸类型">
+					<cl-row :gutter="16">
+						<cl-col :span="8">
+							<cl-radio
+								v-model="filterForm.wallpaperType"
+								label="全部"
+								value="all"
+								:show-icon="false"
+								:pt="{
+									className: parseClass([
+										'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+										[isDark, 'bg-surface-800', 'bg-surface-100'],
+										[
+											filterForm.wallpaperType == 'all',
+											`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+										]
+									]),
+									label: { className: 'text-sm' }
+								}"
+							></cl-radio>
+						</cl-col>
+						<cl-col :span="8">
+							<cl-radio
+								v-model="filterForm.wallpaperType"
+								label="PC壁纸"
+								value="pc"
+								:show-icon="false"
+								:pt="{
+									className: parseClass([
+										'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+										[isDark, 'bg-surface-800', 'bg-surface-100'],
+										[
+											filterForm.wallpaperType == 'pc',
+											`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+										]
+									]),
+									label: { className: 'text-sm' }
+								}"
+							></cl-radio>
+						</cl-col>
+						<cl-col :span="8">
+							<cl-radio
+								v-model="filterForm.wallpaperType"
+								label="手机壁纸"
+								value="mobile"
+								:show-icon="false"
+								:pt="{
+									className: parseClass([
+										'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+										[isDark, 'bg-surface-800', 'bg-surface-100'],
+										[
+											filterForm.wallpaperType == 'mobile',
+											`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+										]
+									]),
+									label: { className: 'text-sm' }
+								}"
+							></cl-radio>
+						</cl-col>
+					</cl-row>
+				</cl-form-item>
+
+				<!-- 颜色筛选 -->
+				<cl-form-item label="颜色筛选">
+					<cl-row :gutter="12">
+						<cl-col :span="4" v-for="color in colorOptions" :key="color.value">
+							<view
+								class="color-item mb-3 rounded-lg border-2 border-solid"
+								:class="[
+									filterForm.colors.includes(color.value) ? 'border-primary-500' : 'border-transparent'
+								]"
+								@tap="toggleColor(color.value)"
+							>
+								<view
+									class="color-box w-full h-10 rounded-md"
+									:style="`background-color: #${color.value}`"
+								></view>
+							</view>
+						</cl-col>
+					</cl-row>
+				</cl-form-item>
+
 						<!-- 宽高比 -->
 						<cl-form-item label="宽高比">
 							<cl-row :gutter="16">
@@ -476,13 +559,15 @@ let currentPage = 1;
 // 随机种子（用于 random 排序时保持分页一致性）
 let randomSeed = "";
 
-// 筛选表单（本地副本）- 使用默认值初始化
+// 筛选表单(本地副本)- 使用默认值初始化
 const filterForm = reactive<FilterForm>({
 	categories: ["general", "anime", "people"],
 	purity: ["sfw"],
 	sorting: "date_added",
 	topRange: "1M",
-	ratios: [] as string[]
+	ratios: [] as string[],
+	wallpaperType: 'all',
+	colors: [] as string[]
 });
 
 // 从 store 同步筛选表单数据
@@ -503,6 +588,12 @@ function syncFilterFormFromStore() {
 		}
 		if (storeForm.ratios != null && Array.isArray(storeForm.ratios)) {
 			filterForm.ratios = [...storeForm.ratios];
+		}
+		if (storeForm.wallpaperType != null) {
+			filterForm.wallpaperType = storeForm.wallpaperType;
+		}
+		if (storeForm.colors != null && Array.isArray(storeForm.colors)) {
+			filterForm.colors = [...storeForm.colors];
 		}
 	}
 }
@@ -534,6 +625,34 @@ const ratioOptions = ref([
 	{ label: "32x9", value: "32x9" },
 	{ label: "9x16", value: "9x16" },
 	{ label: "10x16", value: "10x16" }
+]);
+
+// 颜色选项 - 来自 Wallhaven API 文档的24种预设颜色
+const colorOptions = ref([
+	{ value: "660000" },
+	{ value: "990000" },
+	{ value: "cc0000" },
+	{ value: "cc3333" },
+	{ value: "ea4c88" },
+	{ value: "993399" },
+	{ value: "663399" },
+	{ value: "333399" },
+	{ value: "0066cc" },
+	{ value: "0099cc" },
+	{ value: "66cccc" },
+	{ value: "77cc33" },
+	{ value: "669900" },
+	{ value: "336600" },
+	{ value: "666600" },
+	{ value: "999900" },
+	{ value: "cccc33" },
+	{ value: "ffff00" },
+	{ value: "ffcc33" },
+	{ value: "ff9900" },
+	{ value: "ff6600" },
+	{ value: "cc6633" },
+	{ value: "996633" },
+	{ value: "663300" }
 ]);
 
 // 打开左侧抽屉
@@ -584,6 +703,16 @@ function clearSearchHistory() {
 	showSearchHistory.value = false;
 }
 
+// 切换颜色选择
+function toggleColor(colorValue: string) {
+	const index = filterForm.colors.indexOf(colorValue);
+	if (index >= 0) {
+		filterForm.colors.splice(index, 1);
+	} else {
+		filterForm.colors.push(colorValue);
+	}
+}
+
 // 重置筛选
 function resetFilter() {
 	filterForm.categories = ["general", "anime", "people"];
@@ -591,6 +720,8 @@ function resetFilter() {
 	filterForm.sorting = "date_added";
 	filterForm.topRange = "1M";
 	filterForm.ratios = [];
+	filterForm.wallpaperType = 'all';
+	filterForm.colors = [];
 }
 
 // 应用筛选
@@ -600,7 +731,9 @@ function applyFilter() {
 		purity: [...filterForm.purity],
 		sorting: filterForm.sorting,
 		topRange: filterForm.topRange,
-		ratios: [...filterForm.ratios]
+		ratios: [...filterForm.ratios],
+		wallpaperType: filterForm.wallpaperType,
+		colors: [...filterForm.colors]
 	});
 	rightDrawerVisible.value = false;
 	refreshList();

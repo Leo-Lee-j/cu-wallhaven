@@ -38,7 +38,9 @@ export class WallhavenStore {
 		purity: ["sfw"],
 		sorting: "date_added",
 		topRange: "1M",
-		ratios: []
+		ratios: [],
+		wallpaperType: 'all',
+		colors: []
 	});
 
 	constructor() {
@@ -208,6 +210,36 @@ export class WallhavenStore {
 	}
 
 	/**
+	 * 构建宽高比参数，根据 wallpaperType 和 ratios 合并
+	 */
+	private buildRatios(): string {
+		const wallpaperType = this.filterForm.value?.wallpaperType ?? 'all';
+		const customRatios = this.filterForm.value?.ratios ?? [];
+		
+		const ratioList: string[] = [];
+		
+		// 根据壁纸类型添加预设比例
+		if (wallpaperType === 'pc') {
+			// PC壁纸 - 横屏比例
+			ratioList.push('16x9', '16x10', '21x9', '32x9', '4x3', '5x4');
+		} else if (wallpaperType === 'mobile') {
+			// 手机壁纸 - 竖屏比例
+			ratioList.push('9x16', '10x16', '9x18', '9x19.5', '9x20');
+		}
+		
+		// 添加自定义比例，去重
+		if (customRatios != null && Array.isArray(customRatios)) {
+			for (const ratio of customRatios) {
+				if (!ratioList.includes(ratio)) {
+					ratioList.push(ratio);
+				}
+			}
+		}
+		
+		return ratioList.join(',');
+	}
+
+	/**
 	 * 搜索壁纸
 	 */
 	async search(params: SearchParams = {}): Promise<SearchResponse> {
@@ -237,10 +269,16 @@ export class WallhavenStore {
 			searchParams.append("topRange", params.topRange || this.filterForm.value?.topRange || "1M");
 		}
 
-		// 宽高比
-		const ratios = this.filterForm.value?.ratios;
-		if (ratios != null && Array.isArray(ratios) && ratios.length > 0) {
-			searchParams.append("ratios", ratios.join(","));
+		// 宽高比 - 根据 wallpaperType 和 ratios 构建
+		const ratiosParam = this.buildRatios();
+		if (ratiosParam) {
+			searchParams.append("ratios", ratiosParam);
+		}
+
+		// 颜色筛选
+		const colors = this.filterForm.value?.colors;
+		if (colors != null && Array.isArray(colors) && colors.length > 0) {
+			searchParams.append("colors", colors.join(","));
 		}
 
 		// 页码
