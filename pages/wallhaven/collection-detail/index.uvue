@@ -142,7 +142,7 @@ async function loadData() {
 			waterfallRef.value?.append(newWallpapers as unknown as UTSJSONObject[]);
 
 			// 更新总数
-			if (response.meta && response.meta.total !== undefined) {
+			if (response.meta && response.meta.total !== null) {
 				totalCount.value = response.meta.total;
 			}
 

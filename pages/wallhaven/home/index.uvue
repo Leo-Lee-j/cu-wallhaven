@@ -38,7 +38,8 @@
 					<cl-text
 						:pt="{ className: 'text-primary-500' }"
 						@tap="cancelSearch"
-					>取消</cl-text>
+					>取消
+					</cl-text>
 				</view>
 				<view
 					v-else
@@ -60,7 +61,8 @@
 						<cl-text
 							:pt="{ className: 'text-sm text-primary-500' }"
 							@tap="clearSearchHistory"
-						>清空</cl-text>
+						>清空
+						</cl-text>
 					</view>
 					<view class="flex flex-row flex-wrap">
 						<view
@@ -105,12 +107,12 @@
 						></image>
 						<view class="p-2 flex flex-row items-center justify-between">
 							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ item['resolution'] }}
+								{{ item["resolution"] }}
 							</cl-text>
 							<view class="flex flex-row items-center">
 								<cl-icon name="heart-line" :size="28" color="gray"></cl-icon>
 								<cl-text :pt="{ className: 'text-xs text-surface-400 ml-1' }">
-									{{ item['favorites'] }}
+									{{ item["favorites"] }}
 								</cl-text>
 							</view>
 						</view>
@@ -138,7 +140,7 @@
 						:pt="{ className: 'border-4 border-white/20' }"
 					></cl-avatar>
 					<cl-text :pt="{ className: 'mt-4 text-white text-lg font-bold' }">
-						{{ store.username.value !== '' ? store.username.value : '未设置用户名' }}
+						{{ store.username.value !== "" ? store.username.value : "未设置用户名" }}
 					</cl-text>
 					<cl-text
 						v-if="store.apiKey.value"
@@ -389,16 +391,16 @@
 							</cl-row>
 						</cl-form-item>
 
-				<!-- 壁纸类型 -->
-				<cl-form-item label="壁纸类型">
-					<cl-row :gutter="16">
-						<cl-col :span="8">
-							<cl-radio
-								v-model="filterForm.wallpaperType"
-								label="全部"
-								value="all"
-								:show-icon="false"
-								:pt="{
+						<!-- 壁纸类型 -->
+						<cl-form-item label="壁纸类型">
+							<cl-row :gutter="16">
+								<cl-col :span="8">
+									<cl-radio
+										v-model="filterForm.wallpaperType"
+										label="全部"
+										value="all"
+										:show-icon="false"
+										:pt="{
 									className: parseClass([
 										'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
 										[isDark, 'bg-surface-800', 'bg-surface-100'],
@@ -409,15 +411,15 @@
 									]),
 									label: { className: 'text-sm' }
 								}"
-							></cl-radio>
-						</cl-col>
-						<cl-col :span="8">
-							<cl-radio
-								v-model="filterForm.wallpaperType"
-								label="PC壁纸"
-								value="pc"
-								:show-icon="false"
-								:pt="{
+									></cl-radio>
+								</cl-col>
+								<cl-col :span="8">
+									<cl-radio
+										v-model="filterForm.wallpaperType"
+										label="PC壁纸"
+										value="pc"
+										:show-icon="false"
+										:pt="{
 									className: parseClass([
 										'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
 										[isDark, 'bg-surface-800', 'bg-surface-100'],
@@ -428,15 +430,15 @@
 									]),
 									label: { className: 'text-sm' }
 								}"
-							></cl-radio>
-						</cl-col>
-						<cl-col :span="8">
-							<cl-radio
-								v-model="filterForm.wallpaperType"
-								label="手机壁纸"
-								value="mobile"
-								:show-icon="false"
-								:pt="{
+									></cl-radio>
+								</cl-col>
+								<cl-col :span="8">
+									<cl-radio
+										v-model="filterForm.wallpaperType"
+										label="手机壁纸"
+										value="mobile"
+										:show-icon="false"
+										:pt="{
 									className: parseClass([
 										'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
 										[isDark, 'bg-surface-800', 'bg-surface-100'],
@@ -447,30 +449,30 @@
 									]),
 									label: { className: 'text-sm' }
 								}"
-							></cl-radio>
-						</cl-col>
-					</cl-row>
-				</cl-form-item>
+									></cl-radio>
+								</cl-col>
+							</cl-row>
+						</cl-form-item>
 
-				<!-- 颜色筛选 -->
-				<cl-form-item label="颜色筛选">
-					<cl-row :gutter="12">
-						<cl-col :span="4" v-for="color in colorOptions" :key="color.value">
-							<view
-								class="color-item mb-3 rounded-lg border-2 border-solid"
-								:class="[
+						<!-- 颜色筛选 -->
+						<cl-form-item label="颜色筛选">
+							<cl-row :gutter="12">
+								<cl-col :span="4" v-for="color in colorOptions" :key="color.value">
+									<view
+										class="color-item mb-3 rounded-lg border-2 border-solid"
+										:class="[
 									filterForm.colors.includes(color.value) ? 'border-primary-500' : 'border-transparent'
 								]"
-								@tap="toggleColor(color.value)"
-							>
-								<view
-									class="color-box w-full h-10 rounded-md"
-									:style="`background-color: #${color.value}`"
-								></view>
-							</view>
-						</cl-col>
-					</cl-row>
-				</cl-form-item>
+										@tap="toggleColor(color.value)"
+									>
+										<view
+											class="color-box w-full h-10 rounded-md"
+											:style="`background-color: #${color.value}`"
+										></view>
+									</view>
+								</cl-col>
+							</cl-row>
+						</cl-form-item>
 
 						<!-- 宽高比 -->
 						<cl-form-item label="宽高比">
@@ -506,11 +508,13 @@
 						text
 						:pt="{ className: 'flex-1 mr-2' }"
 						@tap="resetFilter"
-					>重置</cl-button>
+					>重置
+					</cl-button>
 					<cl-button
 						:pt="{ className: 'flex-1' }"
 						@tap="applyFilter"
-					>确定</cl-button>
+					>确定
+					</cl-button>
 				</view>
 
 				<cl-safe-area type="bottom"></cl-safe-area>
@@ -539,7 +543,7 @@ const searchKeyword = ref("");
 const showSearchHistory = ref(false);
 
 // 是否有搜索历史
-const hasSearchHistory = computed<boolean>(() : boolean => {
+const hasSearchHistory = computed<boolean>((): boolean => {
 	return store.searchHistory.value.length >= 1;
 });
 
@@ -566,7 +570,7 @@ const filterForm = reactive<FilterForm>({
 	sorting: "date_added",
 	topRange: "1M",
 	ratios: [] as string[],
-	wallpaperType: 'all',
+	wallpaperType: "all",
 	colors: [] as string[]
 });
 
@@ -720,7 +724,7 @@ function resetFilter() {
 	filterForm.sorting = "date_added";
 	filterForm.topRange = "1M";
 	filterForm.ratios = [];
-	filterForm.wallpaperType = 'all';
+	filterForm.wallpaperType = "all";
 	filterForm.colors = [];
 }
 
@@ -837,7 +841,7 @@ onMounted(() => {
 
 .history-tag {
 	transition: all 0.2s ease;
-	
+
 	&:active {
 		transform: scale(0.95);
 		opacity: 0.8;

@@ -171,12 +171,11 @@ export class WallhavenStore {
 	/**
 	 * 构建请求头
 	 */
-	private buildHeaders(): Record<string, string> {
-		const headers: Record<string, string> = {};
-		if (this.apiKey.value) {
-			headers["X-API-Key"] = this.apiKey.value;
+	private buildHeaders(): UTSJSONObject {
+		if (this.apiKey.value !== "") {
+			return { "X-API-Key": this.apiKey.value } as UTSJSONObject;
 		}
-		return headers;
+		return {} as UTSJSONObject;
 	}
 
 	/**
@@ -242,61 +241,61 @@ export class WallhavenStore {
 	/**
 	 * 搜索壁纸
 	 */
-	async search(params: SearchParams = {}): Promise<SearchResponse> {
-		const searchParams = new URLSearchParams();
+	async search(params: SearchParams = {} as SearchParams): Promise<SearchResponse> {
+		const queryParts: string[] = [];
 
 		// 关键词
-		if (params.q) {
-			searchParams.append("q", params.q);
+		if (params.q !== undefined && params.q !== "") {
+			queryParts.push(`q=${encodeURIComponent(params.q)}`);
 		}
 
 		// 分类
-		searchParams.append("categories", params.categories ?? this.buildCategories());
+		queryParts.push(`categories=${params.categories ?? this.buildCategories()}`);
 
 		// 纯度
-		searchParams.append("purity", params.purity ?? this.buildPurity());
+		queryParts.push(`purity=${params.purity ?? this.buildPurity()}`);
 
 		// 排序
-		searchParams.append("sorting", params.sorting ?? this.filterForm.value?.sorting ?? "date_added");
+		queryParts.push(`sorting=${params.sorting ?? this.filterForm.value?.sorting ?? "date_added"}`);
 
 		// 排序顺序
-		if (params.order) {
-			searchParams.append("order", params.order);
+		if (params.order !== undefined) {
+			queryParts.push(`order=${params.order}`);
 		}
 
 		// 热门时间范围
 		if (params.sorting === "toplist" || this.filterForm.value?.sorting === "toplist") {
-			searchParams.append("topRange", params.topRange ?? this.filterForm.value?.topRange ?? "1M");
+			queryParts.push(`topRange=${params.topRange ?? this.filterForm.value?.topRange ?? "1M"}`);
 		}
 
 		// 宽高比 - 根据 wallpaperType 和 ratios 构建
 		const ratiosParam = this.buildRatios();
-		if (ratiosParam) {
-			searchParams.append("ratios", ratiosParam);
+		if (ratiosParam !== "") {
+			queryParts.push(`ratios=${ratiosParam}`);
 		}
 
 		// 颜色筛选
 		const colors = this.filterForm.value?.colors;
-		if (colors != null && Array.isArray(colors) && colors.length > 0) {
-			searchParams.append("colors", colors.join(","));
+		if (colors !== null && Array.isArray(colors) && colors.length > 0) {
+			queryParts.push(`colors=${colors.join(",")}`);
 		}
 
 		// 页码
-		if (params.page) {
-			searchParams.append("page", params.page.toString());
+		if (params.page !== undefined) {
+			queryParts.push(`page=${params.page.toString()}`);
 		}
 
 		// 随机种子
-		if (params.seed) {
-			searchParams.append("seed", params.seed);
+		if (params.seed !== undefined && params.seed !== "") {
+			queryParts.push(`seed=${params.seed}`);
 		}
 
 		// API Key
-		if (this.apiKey.value) {
-			searchParams.append("apikey", this.apiKey.value);
+		if (this.apiKey.value !== "") {
+			queryParts.push(`apikey=${this.apiKey.value}`);
 		}
 
-		const url = `${API_BASE}/search?${searchParams.toString()}`;
+		const url = `${API_BASE}/search?${queryParts.join("&")}`;
 
 		return new Promise((resolve, reject) => {
 			uni.request({
@@ -322,7 +321,7 @@ export class WallhavenStore {
 	 */
 	async getWallpaper(id: string): Promise<Wallpaper> {
 		let url = `${API_BASE}/w/${id}`;
-		if (this.apiKey.value) {
+		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `?apikey=${this.apiKey.value}`;
 		}
 
@@ -351,10 +350,10 @@ export class WallhavenStore {
 	 */
 	async getCollections(username?: string): Promise<Collection[]> {
 		let url = `${API_BASE}/collections`;
-		if (username) {
+		if (username !== null && username !== null) {
 			url += `/${username}`;
 		}
-		if (this.apiKey.value) {
+		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `?apikey=${this.apiKey.value}`;
 		}
 
@@ -387,7 +386,7 @@ export class WallhavenStore {
 		page: number = 1
 	): Promise<SearchResponse> {
 		let url = `${API_BASE}/collections/${username}/${collectionId}?page=${page}`;
-		if (this.apiKey.value) {
+		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `&apikey=${this.apiKey.value}`;
 		}
 
