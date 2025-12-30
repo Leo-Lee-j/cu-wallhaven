@@ -245,7 +245,7 @@ export class WallhavenStore {
 		const queryParts: string[] = [];
 
 		// 关键词
-		if (params.q !== undefined && params.q !== "") {
+		if (params.q != null && params.q !== "") {
 			queryParts.push(`q=${encodeURIComponent(params.q)}`);
 		}
 
@@ -259,7 +259,7 @@ export class WallhavenStore {
 		queryParts.push(`sorting=${params.sorting ?? this.filterForm.value?.sorting ?? "date_added"}`);
 
 		// 排序顺序
-		if (params.order !== undefined) {
+		if (params.order != null) {
 			queryParts.push(`order=${params.order}`);
 		}
 
@@ -281,12 +281,12 @@ export class WallhavenStore {
 		}
 
 		// 页码
-		if (params.page !== undefined) {
+		if (params.page != null) {
 			queryParts.push(`page=${params.page.toString()}`);
 		}
 
 		// 随机种子
-		if (params.seed !== undefined && params.seed !== "") {
+		if (params.seed != null && params.seed !== "") {
 			queryParts.push(`seed=${params.seed}`);
 		}
 
@@ -348,9 +348,9 @@ export class WallhavenStore {
 	/**
 	 * 获取用户收藏夹列表
 	 */
-	async getCollections(username?: string): Promise<Collection[]> {
+	async getCollections(username: string | null = null): Promise<Collection[]> {
 		let url = `${API_BASE}/collections`;
-		if (username !== null && username !== null) {
+		if (username !== null && username !== "") {
 			url += `/${username}`;
 		}
 		if (this.apiKey.value !== '' && this.apiKey.value !== null) {

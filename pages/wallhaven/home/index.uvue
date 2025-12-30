@@ -527,7 +527,7 @@
 import { ref, reactive, computed, onMounted } from "vue";
 import { router, useStore, isDark, parseClass } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
-import type { Wallpaper, FilterForm } from "@/types/wallhaven";
+import type { Wallpaper, FilterForm, SearchParams } from "@/types/wallhaven";
 
 const ui = useUi();
 const { wallhaven } = useStore();
@@ -561,7 +561,7 @@ const finished = ref(false);
 let currentPage = 1;
 
 // 随机种子（用于 random 排序时保持分页一致性）
-let randomSeed = "";
+let randomSeed: string | null = null;
 
 // 筛选表单(本地副本)- 使用默认值初始化
 const filterForm = reactive<FilterForm>({
@@ -759,23 +759,36 @@ async function loadData() {
 	loading.value = true;
 
 	try {
-		const response = await store.search({
-			q: searchKeyword.value !== "" ? searchKeyword.value : undefined,
+		console.log("开始请求数据，参数:", {
+			q: searchKeyword.value !== "" ? searchKeyword.value : null,
 			page: currentPage,
-			seed: randomSeed !== "" ? randomSeed : undefined
+			seed: randomSeed
 		});
 
-		console.log(response);
+		const response = await store.search({
+			q: searchKeyword.value !== "" ? searchKeyword.value : null,
+			page: currentPage,
+			seed: randomSeed
+		} as SearchParams);
+
+		console.log("请求成功，返回数据:", response);
 
 		const wallpapers = response.data;
 
 		if (wallpapers.length === 0) {
+			console.log("返回数据为空");
 			finished.value = true;
 		} else {
-			waterfallRef.value?.append(wallpapers as unknown as UTSJSONObject[]);
+			console.log(`获取到 ${wallpapers.length} 条数据，准备追加到瀑布流`);
+			
+			if (waterfallRef.value == null) {
+				console.error("waterfallRef 为空，无法追加数据！");
+			} else {
+				waterfallRef.value?.append(wallpapers as unknown as UTSJSONObject[]);
+			}
 
 			// 保存随机种子
-			if (response.meta.seed) {
+			if (response.meta.seed != null) {
 				randomSeed = response.meta.seed;
 			}
 
@@ -787,6 +800,7 @@ async function loadData() {
 			}
 		}
 	} catch (err: any) {
+		console.error("请求数据出错:", err);
 		ui.showToast({
 			message: err.message ?? "加载失败"
 		});
@@ -797,31 +811,31 @@ async function loadData() {
 
 // 跳转到详情页
 function toDetail(item: UTSJSONObject) {
-	router.to(`/pages/wallhaven/detail/index?id=${item.getString("id") ?? ""}`);
+	router?.to(`/pages/wallhaven/detail/index?id=${item.getString("id") ?? ""}`);
 }
 
 // 跳转到在线收藏夹
 function toCollections() {
 	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/collections/index");
+	router?.to("/pages/wallhaven/collections/index");
 }
 
 // 跳转到本地收藏
 function toFavorites() {
 	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/favorites/index");
+	router?.to("/pages/wallhaven/favorites/index");
 }
 
 // 跳转到设置
 function toSettings() {
 	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/settings/index");
+	router?.to("/pages/wallhaven/settings/index");
 }
 
 // 跳转到关于
 function toAbout() {
 	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/about/index");
+	router?.to("/pages/wallhaven/about/index");
 }
 
 // 触底加载更多

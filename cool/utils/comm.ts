@@ -57,13 +57,13 @@ export function isFunction(value: any): boolean {
  * @example isNull(null) // true
  * @example isNull(undefined) // true
  */
-export function isNull(value?: any | null): boolean {
+export function isNull(value: any | null): boolean {
 	// #ifdef APP
 	return value == null;
 	// #endif
 
 	// #ifndef APP
-	return value == null || value == undefined;
+	return value == null;
 	// #endif
 }
 

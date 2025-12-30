@@ -71,11 +71,14 @@ const hasApiKey = computed(() => {
 async function loadCollections() {
 	if (!hasApiKey.value) return;
 
+	if (loading.value) return;
+
 	loading.value = true;
 
 	try {
-		const username = wallhaven.username.value !== "" ? wallhaven.username.value : undefined;
-		collections.value = await wallhaven.getCollections(username);
+		const username = wallhaven.username.value !== "" ? wallhaven.username.value : null;
+		const response = await wallhaven.getCollections(username as string | null);
+		collections.value = response;
 	} catch (err: any) {
 		ui.showToast({
 			message: err.message ?? "加载失败"
