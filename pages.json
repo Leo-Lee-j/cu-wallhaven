@@ -37,6 +37,12 @@
 			}
 		},
 		{
+			"path": "pages/wallhaven/collection-detail/index",
+			"style": {
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/index/home",
 			"style": {
 				"navigationStyle": "custom"

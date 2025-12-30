@@ -92,8 +92,7 @@ function toCollection(item: Collection) {
 		ui.showToast({ message: "请先设置用户名" });
 		return;
 	}
-	// TODO: 实现收藏夹内容页面
-	ui.showToast({ message: `查看收藏夹: ${item.label}` });
+	router.to(`/pages/wallhaven/collection-detail/index?id=${item.id}&username=${username}&name=${encodeURIComponent(item.label)}`);
 }
 
 // 跳转到设置
