@@ -659,6 +659,73 @@ const colorOptions = ref([
 	{ value: "663300" }
 ]);
 
+// 加载数据
+async function loadData() {
+	if (loading.value || finished.value) return;
+
+	loading.value = true;
+
+	try {
+		console.log("开始请求数据，参数:", {
+			q: searchKeyword.value !== "" ? searchKeyword.value : null,
+			page: currentPage,
+			seed: randomSeed
+		});
+
+		const response = await store.search({
+			q: searchKeyword.value !== "" ? searchKeyword.value : null,
+			page: currentPage,
+			seed: randomSeed
+		} as SearchParams);
+
+		console.log("请求成功，返回数据:", response);
+
+		const wallpapers = response.data;
+
+		if (wallpapers.length === 0) {
+			console.log("返回数据为空");
+			finished.value = true;
+		} else {
+			console.log(`获取到 ${wallpapers.length} 条数据，准备追加到瀑布流`);
+			
+			if (waterfallRef.value == null) {
+				console.error("waterfallRef 为空，无法追加数据！");
+			} else {
+				// @ts-ignore
+				waterfallRef.value?.append(wallpapers as UTSJSONObject[]);
+			}
+
+			// 保存随机种子
+			if (response.meta.seed != null) {
+				randomSeed = response.meta.seed;
+			}
+
+			// 检查是否最后一页
+			if (currentPage >= response.meta.last_page) {
+				finished.value = true;
+			} else {
+				currentPage++;
+			}
+		}
+	} catch (err: any) {
+		console.error("请求数据出错:", err);
+		ui.showToast({
+			message: err.message ?? "加载失败"
+		});
+	} finally {
+		loading.value = false;
+	}
+}
+
+// 刷新列表
+async function refreshList() {
+	currentPage = 1;
+	randomSeed = "";
+	finished.value = false;
+	waterfallRef.value?.clear();
+	await loadData();
+}
+
 // 打开左侧抽屉
 function openLeftDrawer() {
 	leftDrawerVisible.value = true;
@@ -682,7 +749,7 @@ function cancelSearch() {
 
 // 搜索
 function onSearch() {
-	if (searchKeyword.value.trim()) {
+	if (searchKeyword.value.trim().length > 0) {
 		store.addSearchHistory(searchKeyword.value.trim());
 	}
 	showSearchHistory.value = false;
@@ -743,72 +810,7 @@ function applyFilter() {
 	refreshList();
 }
 
-// 刷新列表
-async function refreshList() {
-	currentPage = 1;
-	randomSeed = "";
-	finished.value = false;
-	waterfallRef.value?.clear();
-	await loadData();
-}
 
-// 加载数据
-async function loadData() {
-	if (loading.value || finished.value) return;
-
-	loading.value = true;
-
-	try {
-		console.log("开始请求数据，参数:", {
-			q: searchKeyword.value !== "" ? searchKeyword.value : null,
-			page: currentPage,
-			seed: randomSeed
-		});
-
-		const response = await store.search({
-			q: searchKeyword.value !== "" ? searchKeyword.value : null,
-			page: currentPage,
-			seed: randomSeed
-		} as SearchParams);
-
-		console.log("请求成功，返回数据:", response);
-
-		const wallpapers = response.data;
-
-		if (wallpapers.length === 0) {
-			console.log("返回数据为空");
-			finished.value = true;
-		} else {
-			console.log(`获取到 ${wallpapers.length} 条数据，准备追加到瀑布流`);
-			
-			if (waterfallRef.value == null) {
-				console.error("waterfallRef 为空，无法追加数据！");
-			} else {
-				// @ts-ignore
-				waterfallRef.value?.append(wallpapers as UTSJSONObject[]);
-			}
-
-			// 保存随机种子
-			if (response.meta.seed != null) {
-				randomSeed = response.meta.seed;
-			}
-
-			// 检查是否最后一页
-			if (currentPage >= response.meta.last_page) {
-				finished.value = true;
-			} else {
-				currentPage++;
-			}
-		}
-	} catch (err: any) {
-		console.error("请求数据出错:", err);
-		ui.showToast({
-			message: err.message ?? "加载失败"
-		});
-	} finally {
-		loading.value = false;
-	}
-}
 
 // 跳转到详情页
 function toDetail(item: UTSJSONObject) {
