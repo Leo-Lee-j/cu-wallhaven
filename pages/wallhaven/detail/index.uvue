@@ -191,19 +191,29 @@ function toggleFavorite() {
 	}
 }
 
+// 定义下载成功类型
+type DownloadFileSuccess = {
+	tempFilePath: string
+}
+
+// 定义下载错误类型
+type DownloadError = {
+	errMsg: string
+}
+
 // 下载壁纸
 async function downloadWallpaper() {
-	if (!wallpaper.value) return;
+	if (wallpaper.value === null) return;
 
 	downloading.value = true;
 
 	try {
 		// 下载图片
-		const downloadResult = await new Promise<UniApp.DownloadSuccessData>((resolve, reject) => {
+		const downloadResult = await new Promise<DownloadFileSuccess>((resolve, reject) => {
 			uni.downloadFile({
 				url: wallpaper.value!.path,
-				success: resolve,
-				fail: reject
+				success: (res) => resolve(res as DownloadFileSuccess),
+				fail: (err) => reject(err)
 			});
 		});
 
@@ -221,8 +231,9 @@ async function downloadWallpaper() {
 			icon: "check-line"
 		});
 	} catch (err: any) {
+		const error = err as DownloadError
 		ui.showToast({
-			message: err.errMsg ?? "下载失败"
+			message: error.errMsg ?? "下载失败"
 		});
 	} finally {
 		downloading.value = false;
@@ -231,32 +242,44 @@ async function downloadWallpaper() {
 
 // 获取分类标签
 function getCategoryLabel(category: string): string {
-	const map: Record<string, string> = {
-		general: "综合",
-		anime: "动漫",
-		people: "人物"
-	};
-	return map[category] ?? category;
+	switch (category) {
+		case "general":
+			return "综合";
+		case "anime":
+			return "动漫";
+		case "people":
+			return "人物";
+		default:
+			return category;
+	}
 }
 
 // 获取纯度标签
 function getPurityLabel(purity: string): string {
-	const map: Record<string, string> = {
-		sfw: "安全",
-		sketchy: "轻微",
-		nsfw: "成人"
-	};
-	return map[purity] ?? purity;
+	switch (purity) {
+		case "sfw":
+			return "安全";
+		case "sketchy":
+			return "轻微";
+		case "nsfw":
+			return "成人";
+		default:
+			return purity;
+	}
 }
 
 // 获取纯度类型（用于标签颜色）
 function getPurityType(purity: string): string {
-	const map: Record<string, string> = {
-		sfw: "success",
-		sketchy: "warning",
-		nsfw: "error"
-	};
-	return map[purity] ?? "info";
+	switch (purity) {
+		case "sfw":
+			return "success";
+		case "sketchy":
+			return "warning";
+		case "nsfw":
+			return "error";
+		default:
+			return "info";
+	}
 }
 
 // 格式化文件大小

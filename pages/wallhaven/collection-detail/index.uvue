@@ -30,19 +30,19 @@
 						@tap="toDetail(item)"
 					>
 						<image
-							:src="item['thumbs']['original']"
+							:src="getThumbnail(item)"
 							mode="widthFix"
 							class="w-full"
 							:lazy-load="true"
 						></image>
 						<view class="p-2 flex flex-row items-center justify-between">
 							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ item['resolution'] }}
+								{{ getResolution(item) }}
 							</cl-text>
 							<view class="flex flex-row items-center">
 								<cl-icon name="heart-line" :size="28" color="gray"></cl-icon>
 								<cl-text :pt="{ className: 'text-xs text-surface-400 ml-1' }">
-									{{ item['favorites'] }}
+									{{ getFavorites(item) }}
 								</cl-text>
 							</view>
 						</view>
@@ -65,7 +65,7 @@
 		<!-- 空状态 -->
 		<view
 			class="flex flex-col items-center justify-center h-[450px]"
-			v-if="wallpapers.length === 0 && !loading && !error"
+			v-if="wallpapers.length === 0 && !loading && error === ''"
 		>
 			<cl-icon name="image-line" :size="120" color="gray"></cl-icon>
 			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">收藏夹是空的</cl-text>
@@ -200,5 +200,20 @@ onLoad((options) => {
 	}
 	loadData();
 });
+// 辅助函数：获取缩略图 URL
+function getThumbnail(item: UTSJSONObject): string {
+    const thumbs = item["thumbs"] as UTSJSONObject;
+    return thumbs?.getString("original") ?? "";
+}
+
+// 辅助函数：获取分辨率
+function getResolution(item: UTSJSONObject): string {
+    return item.getString("resolution") ?? "";
+}
+
+// 辅助函数：获取收藏数
+function getFavorites(item: UTSJSONObject): string {
+    return item.getString("favorites") ?? "0";
+}
 </script>
 
