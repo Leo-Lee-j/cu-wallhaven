@@ -15,7 +15,7 @@
 						@tap="toDetail(item as Wallpaper)"
 					>
 						<image
-							:src="item['thumbs']['small']"
+							:src="(item as Wallpaper).thumbs.small"
 							mode="widthFix"
 							class="w-full"
 							:lazy-load="true"
@@ -31,7 +31,7 @@
 
 						<view class="p-2 flex flex-row items-center justify-between">
 							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ item['resolution'] }}
+								{{ (item as Wallpaper).resolution }}
 							</cl-text>
 						</view>
 					</view>
