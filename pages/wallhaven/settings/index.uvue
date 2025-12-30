@@ -51,8 +51,14 @@ import { useUi } from "@/uni_modules/cool-ui";
 const ui = useUi();
 const { wallhaven } = useStore();
 
+// 表单数据类型
+type SettingsFormData = {
+	apiKey: string;
+	username: string;
+};
+
 // 表单数据
-const formData = ref({
+const formData = ref<SettingsFormData>({
 	apiKey: "",
 	username: ""
 });

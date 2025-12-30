@@ -100,19 +100,19 @@
 						@tap="toDetail(item)"
 					>
 						<image
-							:src="item['thumbs']['original']"
+							:src="(item as Wallpaper).thumbs.original"
 							mode="widthFix"
 							class="w-full"
 							:lazy-load="true"
 						></image>
 						<view class="p-2 flex flex-row items-center justify-between">
 							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ item["resolution"] }}
+								{{ (item as Wallpaper).resolution }}
 							</cl-text>
 							<view class="flex flex-row items-center">
 								<cl-icon name="heart-line" :size="28" color="gray"></cl-icon>
 								<cl-text :pt="{ className: 'text-xs text-surface-400 ml-1' }">
-									{{ item["favorites"] }}
+									{{ (item as Wallpaper).favorites }}
 								</cl-text>
 							</view>
 						</view>
@@ -529,6 +529,11 @@ import { router, useStore, isDark, parseClass } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
 import type { Wallpaper, FilterForm, SearchParams } from "@/types/wallhaven";
 
+type OptionItem = {
+	label: string;
+	value: string;
+};
+
 const ui = useUi();
 const { wallhaven } = useStore();
 const store = wallhaven;
@@ -603,7 +608,7 @@ function syncFilterFormFromStore() {
 }
 
 // 排序选项
-const sortingOptions = ref([
+const sortingOptions = ref<OptionItem[]>([
 	{ label: "最新", value: "date_added" },
 	{ label: "热门", value: "toplist" },
 	{ label: "随机", value: "random" },
@@ -611,7 +616,7 @@ const sortingOptions = ref([
 ]);
 
 // 热门时间范围选项
-const topRangeOptions = ref([
+const topRangeOptions = ref<OptionItem[]>([
 	{ label: "1天", value: "1d" },
 	{ label: "3天", value: "3d" },
 	{ label: "1周", value: "1w" },
@@ -622,7 +627,7 @@ const topRangeOptions = ref([
 ]);
 
 // 宽高比选项
-const ratioOptions = ref([
+const ratioOptions = ref<OptionItem[]>([
 	{ label: "16x9", value: "16x9" },
 	{ label: "16x10", value: "16x10" },
 	{ label: "21x9", value: "21x9" },
@@ -632,7 +637,10 @@ const ratioOptions = ref([
 ]);
 
 // 颜色选项 - 来自 Wallhaven API 文档的24种预设颜色
-const colorOptions = ref([
+type ColorOption = {
+	value: string;
+}
+const colorOptions = ref<ColorOption[]>([
 	{ value: "660000" },
 	{ value: "990000" },
 	{ value: "cc0000" },
