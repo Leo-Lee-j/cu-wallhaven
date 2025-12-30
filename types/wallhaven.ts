@@ -9,16 +9,19 @@ export type WallpaperThumbs = {
 	small: string;
 };
 
+// 头像尺寸
+export type WallpaperAvatarSizes = {
+	"200px": string;
+	"128px": string;
+	"32px": string;
+	"20px": string;
+};
+
 // 上传者信息
 export type WallpaperUploader = {
 	username: string;
 	group: string;
-	avatar: {
-		"200px": string;
-		"128px": string;
-		"32px": string;
-		"20px": string;
-	};
+	avatar: WallpaperAvatarSizes;
 };
 
 // 壁纸标签
@@ -56,13 +59,19 @@ export type Wallpaper = {
 	tags?: WallpaperTag[];
 };
 
+// 搜索查询对象
+export type SearchQuery = {
+	id: number;
+	tag: string;
+};
+
 // 搜索响应元数据
 export type SearchMeta = {
 	current_page: number;
 	last_page: number;
 	per_page: number;
 	total: number;
-	query: string | { id: number; tag: string } | null;
+	query: string | SearchQuery | null;
 	seed: string | null;
 };
 

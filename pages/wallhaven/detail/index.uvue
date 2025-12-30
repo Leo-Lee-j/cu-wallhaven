@@ -222,7 +222,7 @@ async function downloadWallpaper() {
 		});
 	} catch (err: any) {
 		ui.showToast({
-			message: err.errMsg || "下载失败"
+			message: err.errMsg ?? "下载失败"
 		});
 	} finally {
 		downloading.value = false;
