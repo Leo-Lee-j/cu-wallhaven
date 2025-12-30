@@ -784,7 +784,8 @@ async function loadData() {
 			if (waterfallRef.value == null) {
 				console.error("waterfallRef 为空，无法追加数据！");
 			} else {
-				waterfallRef.value?.append(wallpapers as unknown as UTSJSONObject[]);
+				// @ts-ignore
+				waterfallRef.value?.append(wallpapers as UTSJSONObject[]);
 			}
 
 			// 保存随机种子

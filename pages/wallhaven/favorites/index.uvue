@@ -97,7 +97,8 @@ async function loadFavorites() {
 		// 使用 nextTick 确保 v-if 条件变化后瀑布流组件渲染完成
 		await nextTick();
 		waterfallRef.value?.clear();
-		waterfallRef.value?.append(wallpapers as unknown as UTSJSONObject[]);
+		// @ts-ignore
+		waterfallRef.value?.append(wallpapers as UTSJSONObject[]);
 	} catch (err: any) {
 		ui.showToast({
 			message: err.message ?? "加载失败"
