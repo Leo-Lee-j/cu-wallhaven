@@ -189,10 +189,10 @@ onReachBottom(() => {
 });
 
 // 页面加载时获取参数
-onLoad((options: Record<string, any>) => {
-	username.value = (options["username"] as string) ?? "";
-	collectionId.value = parseInt((options["id"] as string) ?? "0");
-	collectionName.value = decodeURIComponent((options["name"] as string) ?? "未命名收藏夹");
+onLoad((options) => {
+	username.value = (options?.["username"] as string) ?? "";
+	collectionId.value = parseInt((options?.["id"] as string) ?? "0");
+	collectionName.value = decodeURIComponent((options?.["name"] as string) ?? "未命名收藏夹") ?? "未命名收藏夹";
 	
 	if (username.value === '' || collectionId.value === 0) {
 		error.value = "缺少必要参数";
