@@ -155,7 +155,7 @@
 						<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
 							<cl-list-item
 								label="在线收藏夹"
-								icon="folder-line"
+								icon="cloud-line"
 								arrow
 								hoverable
 								@tap="toCollections"
@@ -185,7 +185,7 @@
 							></cl-list-item>
 							<cl-list-item
 								label="关于"
-								icon="information-line"
+								icon="at-line"
 								arrow
 								hoverable
 								@tap="toAbout"

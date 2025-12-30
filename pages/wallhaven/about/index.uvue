@@ -37,7 +37,7 @@
 			<cl-list :pt="{ className: 'w-full mt-4' }">
 				<cl-list-item
 					label="访问 Wallhaven"
-					icon="external-link-line"
+					icon="tuichudenglu"
 					arrow
 					hoverable
 					@tap="openWallhaven"

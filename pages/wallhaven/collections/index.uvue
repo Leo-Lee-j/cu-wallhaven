@@ -29,7 +29,7 @@
 
 		<!-- 空状态 -->
 		<view class="flex flex-col items-center justify-center h-[60vh]" v-else-if="!hasApiKey">
-			<cl-icon name="key-line" :size="120" color="gray"></cl-icon>
+			<cl-icon name="cloud-off-line" :size="120" color="gray"></cl-icon>
 			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">需要配置 API Key</cl-text>
 			<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">请在设置中配置 Wallhaven API Key</cl-text>
 			<cl-button
