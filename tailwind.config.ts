@@ -455,6 +455,16 @@ export default {
 			},
 			scale: {
 				"80": "0.8"
+			},
+			// uvue 不支持多属性的 transition-property，覆盖为单一值
+			transitionProperty: {
+				'none': 'none',
+				'all': 'all',
+				'DEFAULT': 'all',
+				'colors': 'all',
+				'opacity': 'opacity',
+				'shadow': 'all',
+				'transform': 'transform',
 			}
 		}
 	},
