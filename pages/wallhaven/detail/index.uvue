@@ -30,7 +30,7 @@
 		<!-- 壁纸显示区域 -->
 		<view class="wallpaper-container" v-if="wallpaper">
 			<image
-				:src="wallpaper.path"
+				:src="wallpaper!.path"
 				mode="aspectFit"
 				class="w-full h-full"
 				@tap="toggleFullscreen"
@@ -50,49 +50,49 @@
 			<scroll-view
 				scroll-y
 				class="detail-content"
-				:class="{ 'is-expanded': detailVisible && wallpaper }"
-				v-show="wallpaper"
+				:class="{ 'is-expanded': detailVisible && wallpaper != null }"
+				v-if="wallpaper"
 			>
 				<view class="px-4 pt-4">
 					<cl-list>
 						<cl-list-item label="分辨率">
-							<cl-text>{{ wallpaper.resolution }}</cl-text>
+							<cl-text>{{ wallpaper!.resolution }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="分类">
-							<cl-tag size="small">{{ getCategoryLabel(wallpaper.category) }}</cl-tag>
+							<cl-tag size="small">{{ getCategoryLabel(wallpaper!.category) }}</cl-tag>
 						</cl-list-item>
 						<cl-list-item label="内容分级">
 							<cl-tag
 								size="small"
-								:type="getPurityType(wallpaper.purity)"
-							>{{ getPurityLabel(wallpaper.purity) }}</cl-tag>
+								:type="getPurityType(wallpaper!.purity)"
+							>{{ getPurityLabel(wallpaper!.purity) }}</cl-tag>
 						</cl-list-item>
 						<cl-list-item label="浏览量">
-							<cl-text>{{ wallpaper.views }}</cl-text>
+							<cl-text>{{ wallpaper!.views }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="收藏数">
-							<cl-text>{{ wallpaper.favorites }}</cl-text>
+							<cl-text>{{ wallpaper!.favorites }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="文件大小">
-							<cl-text>{{ formatFileSize(wallpaper.file_size) }}</cl-text>
+							<cl-text>{{ formatFileSize(wallpaper!.file_size) }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="文件类型">
-							<cl-text>{{ wallpaper.file_type }}</cl-text>
+							<cl-text>{{ wallpaper!.file_type }}</cl-text>
 						</cl-list-item>
-						<cl-list-item v-if="wallpaper.uploader" label="上传者">
-							<cl-text>{{ wallpaper.uploader.username }}</cl-text>
+						<cl-list-item v-if="wallpaper!.uploader" label="上传者">
+							<cl-text>{{ wallpaper!.uploader!.username }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="上传时间">
-							<cl-text>{{ wallpaper.created_at }}</cl-text>
+							<cl-text>{{ wallpaper!.created_at }}</cl-text>
 						</cl-list-item>
 					</cl-list>
 
 					<!-- 标签 -->
-					<view class="mt-3" v-if="wallpaper.tags && wallpaper.tags.length > 0">
+					<view class="mt-3" v-if="wallpaper!.tags && wallpaper!.tags.length > 0">
 						<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">标签</cl-text>
 						<view class="flex flex-row flex-wrap">
 							<cl-tag
-								v-for="tag in wallpaper.tags"
+								v-for="tag in wallpaper!.tags"
 								:key="tag.id"
 								size="small"
 								:pt="{ className: 'mr-2 mb-2' }"
@@ -101,11 +101,11 @@
 					</view>
 
 					<!-- 颜色 -->
-					<view class="mt-3 pb-2" v-if="wallpaper.colors && wallpaper.colors.length > 0">
+					<view class="mt-3 pb-2" v-if="wallpaper!.colors && wallpaper!.colors.length > 0">
 						<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">主要颜色</cl-text>
 						<view class="flex flex-row flex-wrap">
 							<view
-								v-for="(color, index) in wallpaper.colors"
+								v-for="(color, index) in wallpaper!.colors"
 								:key="index"
 								class="w-8 h-8 rounded-lg mr-2 mb-2 border border-white/20"
 								:style="{ backgroundColor: color }"
@@ -269,7 +269,7 @@ function getPurityLabel(purity: string): string {
 }
 
 // 获取纯度类型（用于标签颜色）
-function getPurityType(purity: string): string {
+function getPurityType(purity: string): any {
 	switch (purity) {
 		case "sfw":
 			return "success";
@@ -300,10 +300,16 @@ async function loadWallpaper() {
 	}
 }
 
+// 定义页面参数类型
+type PageOptions = {
+	id?: string
+}
+
 // 页面加载
 onLoad((options: any) => {
-	if (options.id) {
-		wallpaperId.value = options.id;
+	const opt = options as PageOptions
+	if (opt.id != null) {
+		wallpaperId.value = opt.id!;
 		loadWallpaper();
 	}
 });
