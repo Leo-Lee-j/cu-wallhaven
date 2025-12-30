@@ -236,7 +236,7 @@ function getCategoryLabel(category: string): string {
 		anime: "动漫",
 		people: "人物"
 	};
-	return map[category] || category;
+	return map[category] ?? category;
 }
 
 // 获取纯度标签
@@ -246,7 +246,7 @@ function getPurityLabel(purity: string): string {
 		sketchy: "轻微",
 		nsfw: "成人"
 	};
-	return map[purity] || purity;
+	return map[purity] ?? purity;
 }
 
 // 获取纯度类型（用于标签颜色）
@@ -256,7 +256,7 @@ function getPurityType(purity: string): string {
 		sketchy: "warning",
 		nsfw: "error"
 	};
-	return map[purity] || "info";
+	return map[purity] ?? "info";
 }
 
 // 格式化文件大小
@@ -272,7 +272,7 @@ async function loadWallpaper() {
 		wallpaper.value = await wallhaven.getWallpaper(wallpaperId.value);
 	} catch (err: any) {
 		ui.showToast({
-			message: err.message || "加载失败"
+			message: err.message ?? "加载失败"
 		});
 	}
 }

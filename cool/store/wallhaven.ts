@@ -251,13 +251,13 @@ export class WallhavenStore {
 		}
 
 		// 分类
-		searchParams.append("categories", params.categories || this.buildCategories());
+		searchParams.append("categories", params.categories ?? this.buildCategories());
 
 		// 纯度
-		searchParams.append("purity", params.purity || this.buildPurity());
+		searchParams.append("purity", params.purity ?? this.buildPurity());
 
 		// 排序
-		searchParams.append("sorting", params.sorting || this.filterForm.value?.sorting || "date_added");
+		searchParams.append("sorting", params.sorting ?? this.filterForm.value?.sorting ?? "date_added");
 
 		// 排序顺序
 		if (params.order) {
@@ -266,7 +266,7 @@ export class WallhavenStore {
 
 		// 热门时间范围
 		if (params.sorting === "toplist" || this.filterForm.value?.sorting === "toplist") {
-			searchParams.append("topRange", params.topRange || this.filterForm.value?.topRange || "1M");
+			searchParams.append("topRange", params.topRange ?? this.filterForm.value?.topRange ?? "1M");
 		}
 
 		// 宽高比 - 根据 wallpaperType 和 ratios 构建

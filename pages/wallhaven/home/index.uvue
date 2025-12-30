@@ -756,9 +756,9 @@ async function loadData() {
 
 	try {
 		const response = await store.search({
-			q: searchKeyword.value || undefined,
+			q: searchKeyword.value !== "" ? searchKeyword.value : undefined,
 			page: currentPage,
-			seed: randomSeed || undefined
+			seed: randomSeed !== "" ? randomSeed : undefined
 		});
 
 		console.log(response);
@@ -784,7 +784,7 @@ async function loadData() {
 		}
 	} catch (err: any) {
 		ui.showToast({
-			message: err.message || "加载失败"
+			message: err.message ?? "加载失败"
 		});
 	} finally {
 		loading.value = false;

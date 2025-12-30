@@ -79,7 +79,7 @@ async function save() {
 		}, 500);
 	} catch (err: any) {
 		ui.showToast({
-			message: err.message || "保存失败"
+			message: err.message ?? "保存失败"
 		});
 	} finally {
 		saving.value = false;

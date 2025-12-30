@@ -189,9 +189,9 @@ onReachBottom(() => {
 
 // 页面加载时获取参数
 onLoad((options: Record<string, any>) => {
-	username.value = options["username"] as string || "";
-	collectionId.value = parseInt(options["id"] as string || "0");
-	collectionName.value = decodeURIComponent(options["name"] as string || "未命名收藏夹");
+	username.value = (options["username"] as string) ?? "";
+	collectionId.value = parseInt((options["id"] as string) ?? "0");
+	collectionName.value = decodeURIComponent((options["name"] as string) ?? "未命名收藏夹");
 	
 	if (!username.value || !collectionId.value) {
 		error.value = "缺少必要参数";
