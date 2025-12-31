@@ -330,8 +330,7 @@ onLoad((options?: UTSJSONObject) => {
 	bottom: 0;
 	z-index: 40;
 	background: rgba(0, 0, 0, 0.85);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
+	//backdrop-filter: blur(20px);
 	border-radius: 32rpx 32rpx 0 0;
 	max-height: 500px;
 	display: flex;

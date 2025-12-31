@@ -923,6 +923,7 @@ onMounted(() => {
 
 // 抽屉头部渐变背景
 .drawer-header {
-	background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+	background-color: #6366f1;
+	background-image: linear-gradient(to bottom right, #6366f1, #8b5cf6, #a855f7);
 }
 </style>
