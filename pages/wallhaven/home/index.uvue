@@ -519,11 +519,14 @@ import { router, useStore, isDark, parseClass } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
 import type { Wallpaper, FilterForm, SearchParams } from "@/types/wallhaven";
 import WallpaperItem from "../components/wallpaper-item.uvue";
-
-type OptionItem = {
-	label: string;
-	value: string;
-};
+import {
+	SORTING_OPTIONS,
+	TOP_RANGE_OPTIONS,
+	RATIO_OPTIONS,
+	COLOR_OPTIONS,
+	type OptionItem,
+	type ColorOption
+} from "@/constants/wallhaven";
 
 const ui = useUi();
 const { wallhaven } = useStore();
@@ -598,65 +601,11 @@ function syncFilterFormFromStore() {
 	}
 }
 
-// 排序选项
-const sortingOptions = ref<OptionItem[]>([
-	{ label: "最新", value: "date_added" },
-	{ label: "热门", value: "toplist" },
-	{ label: "随机", value: "random" },
-	{ label: "浏览", value: "views" }
-]);
-
-// 热门时间范围选项
-const topRangeOptions = ref<OptionItem[]>([
-	{ label: "1天", value: "1d" },
-	{ label: "3天", value: "3d" },
-	{ label: "1周", value: "1w" },
-	{ label: "1月", value: "1M" },
-	{ label: "3月", value: "3M" },
-	{ label: "6月", value: "6M" },
-	{ label: "1年", value: "1y" }
-]);
-
-// 宽高比选项
-const ratioOptions = ref<OptionItem[]>([
-	{ label: "16x9", value: "16x9" },
-	{ label: "16x10", value: "16x10" },
-	{ label: "21x9", value: "21x9" },
-	{ label: "32x9", value: "32x9" },
-	{ label: "9x16", value: "9x16" },
-	{ label: "10x16", value: "10x16" }
-]);
-
-// 颜色选项 - 来自 Wallhaven API 文档的24种预设颜色
-type ColorOption = {
-	value: string;
-}
-const colorOptions = ref<ColorOption[]>([
-	{ value: "660000" },
-	{ value: "990000" },
-	{ value: "cc0000" },
-	{ value: "cc3333" },
-	{ value: "ea4c88" },
-	{ value: "993399" },
-	{ value: "663399" },
-	{ value: "333399" },
-	{ value: "0066cc" },
-	{ value: "0099cc" },
-	{ value: "66cccc" },
-	{ value: "77cc33" },
-	{ value: "669900" },
-	{ value: "336600" },
-	{ value: "666600" },
-	{ value: "999900" },
-	{ value: "cccc33" },
-	{ value: "ffff00" },
-	{ value: "ffcc33" },
-	{ value: "ff9900" },
-	{ value: "ff6600" },
-	{ value: "cc6633" },
-	{ value: "996633" },
-	{ value: "663300" }
-]);
+// 使用共享常量
+const sortingOptions = ref<OptionItem[]>(SORTING_OPTIONS);
+const topRangeOptions = ref<OptionItem[]>(TOP_RANGE_OPTIONS);
+const ratioOptions = ref<OptionItem[]>(RATIO_OPTIONS);
+const colorOptions = ref<ColorOption[]>(COLOR_OPTIONS);
 
 // 加载数据
 async function loadData() {
