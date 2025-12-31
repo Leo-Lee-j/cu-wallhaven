@@ -100,19 +100,19 @@
 						@tap="toDetail(item)"
 					>
 						<image
-							:src="(item as Wallpaper).thumbs.original"
+							:src="getThumbnail(item)"
 							mode="widthFix"
 							class="w-full"
 							:lazy-load="true"
 						></image>
 						<view class="p-2 flex flex-row items-center justify-between">
 							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ (item as Wallpaper).resolution }}
+								{{ getResolution(item) }}
 							</cl-text>
 							<view class="flex flex-row items-center">
 								<cl-icon name="heart-line" :size="28" color="gray"></cl-icon>
 								<cl-text :pt="{ className: 'text-xs text-surface-400 ml-1' }">
-									{{ (item as Wallpaper).favorites }}
+									{{ getFavorites(item) }}
 								</cl-text>
 							</view>
 						</view>
@@ -684,11 +684,13 @@ async function loadData() {
 			q: searchKeyword.value !== "" ? searchKeyword.value : null,
 			page: currentPage,
 			seed: randomSeed
-		} as SearchParams);
+		} as any);
 
 		console.log("请求成功，返回数据:", response);
 
-		const wallpapers = response.data;
+		// 将 response 转换为 UTSJSONObject 以访问属性
+		const jsonResponse = response as UTSJSONObject;
+		const wallpapers = jsonResponse['data'] as any[];
 
 		if (wallpapers.length === 0) {
 			console.log("返回数据为空");
@@ -704,15 +706,22 @@ async function loadData() {
 			}
 
 			// 保存随机种子
-			if (response.meta.seed != null) {
-				randomSeed = response.meta.seed;
+			const meta = jsonResponse['meta'] as UTSJSONObject;
+			if (meta != null) {
+				const seed = meta.getString('seed');
+				if (seed != null) {
+					randomSeed = seed;
+				}
 			}
 
 			// 检查是否最后一页
-			if (currentPage >= response.meta.last_page) {
-				finished.value = true;
-			} else {
-				currentPage++;
+			if (meta != null) {
+				const lastPage = meta.getNumber('last_page') ?? 1;
+				if (currentPage >= lastPage) {
+					finished.value = true;
+				} else {
+					currentPage++;
+				}
 			}
 		}
 	} catch (err: any) {
@@ -816,6 +825,36 @@ function applyFilter() {
 	});
 	rightDrawerVisible.value = false;
 	refreshList();
+}
+
+// 辅助函数:获取缩略图 URL
+function getThumbnail(item: any): string {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		const thumbs = obj['thumbs'] as UTSJSONObject | null;
+		if (thumbs != null) {
+			return thumbs.getString('original') ?? "";
+		}
+	}
+	return "";
+}
+
+// 辅助函数:获取分辨率
+function getResolution(item: any): string {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		return obj.getString('resolution') ?? "";
+	}
+	return "";
+}
+
+// 辅助函数:获取收藏数
+function getFavorites(item: any): string {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		return obj.getString('favorites') ?? "0";
+	}
+	return "0";
 }
 
 

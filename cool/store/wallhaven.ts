@@ -63,14 +63,62 @@ export class WallhavenStore {
 		if (username != null) {
 			this.username.value = username;
 		}
-		if (searchHistory != null && Array.isArray(searchHistory)) {
-			this.searchHistory.value = searchHistory as string[];
+		
+		// 处理 searchHistory - 如果是字符串则解析,否则直接使用
+		if (searchHistory != null) {
+			if (typeof searchHistory === 'string') {
+				// 检查字符串是否非空
+				if (searchHistory.trim().length > 0) {
+					try {
+						const parsed = JSON.parse(searchHistory);
+						if (Array.isArray(parsed)) {
+							this.searchHistory.value = parsed as string[];
+						}
+					} catch (err) {
+						console.error("解析 searchHistory 失败:", err);
+					}
+				}
+			} else if (Array.isArray(searchHistory)) {
+				this.searchHistory.value = searchHistory as string[];
+			}
 		}
-		if (localFavorites != null && Array.isArray(localFavorites)) {
-			this.localFavorites.value = localFavorites as string[];
+		
+		// 处理 localFavorites - 如果是字符串则解析,否则直接使用
+		if (localFavorites != null) {
+			if (typeof localFavorites === 'string') {
+				// 检查字符串是否非空
+				if (localFavorites.trim().length > 0) {
+					try {
+						const parsed = JSON.parse(localFavorites);
+						if (Array.isArray(parsed)) {
+							this.localFavorites.value = parsed as string[];
+						}
+					} catch (err) {
+						console.error("解析 localFavorites 失败:", err);
+					}
+				}
+			} else if (Array.isArray(localFavorites)) {
+				this.localFavorites.value = localFavorites as string[];
+			}
 		}
+		
+		// 处理 filterForm - 如果是字符串则解析,否则直接使用
 		if (filterForm != null) {
-			this.filterForm.value = filterForm as FilterForm;
+			if (typeof filterForm === 'string') {
+				// 检查字符串是否非空
+				if (filterForm.trim().length > 0) {
+					try {
+						const parsed = JSON.parse(filterForm);
+						if (parsed != null && typeof parsed === 'object') {
+							this.filterForm.value = parsed as FilterForm;
+						}
+					} catch (err) {
+						console.error("解析 filterForm 失败:", err);
+					}
+				}
+			} else if (typeof filterForm === 'object') {
+				this.filterForm.value = filterForm as FilterForm;
+			}
 		}
 	}
 
@@ -241,31 +289,40 @@ export class WallhavenStore {
 	/**
 	 * 搜索壁纸
 	 */
-	async search(params: SearchParams = {} as SearchParams): Promise<SearchResponse> {
+	async search(params: any = {}): Promise<any> {
 		const queryParts: string[] = [];
+		
+		// 将 params 转换为 UTSJSONObject 以访问属性
+		const p = params as UTSJSONObject;
 
 		// 关键词
-		if (params.q != null && params.q !== "") {
-			queryParts.push(`q=${encodeURIComponent(params.q)}`);
+		const q =  (p != null ? p['q'] : null) as string | null;
+		if (q != null && q !== "") {
+			queryParts.push(`q=${encodeURIComponent(q)}`);
 		}
 
 		// 分类
-		queryParts.push(`categories=${params.categories ?? this.buildCategories()}`);
+		const categories = (p != null ? p['categories'] : null) as string | null;
+		queryParts.push(`categories=${categories ?? this.buildCategories()}`);
 
 		// 纯度
-		queryParts.push(`purity=${params.purity ?? this.buildPurity()}`);
+		const purity = (p != null ? p['purity'] : null) as string | null;
+		queryParts.push(`purity=${purity ?? this.buildPurity()}`);
 
 		// 排序
-		queryParts.push(`sorting=${params.sorting ?? this.filterForm.value?.sorting ?? "date_added"}`);
+		const sorting = (p != null ? p['sorting'] : null) as string | null;
+		queryParts.push(`sorting=${sorting ?? this.filterForm.value?.sorting ?? "date_added"}`);
 
 		// 排序顺序
-		if (params.order != null) {
-			queryParts.push(`order=${params.order}`);
+		const order = (p != null ? p['order'] : null) as string | null;
+		if (order != null) {
+			queryParts.push(`order=${order}`);
 		}
 
 		// 热门时间范围
-		if (params.sorting === "toplist" || this.filterForm.value?.sorting === "toplist") {
-			queryParts.push(`topRange=${params.topRange ?? this.filterForm.value?.topRange ?? "1M"}`);
+		if (sorting === "toplist" || this.filterForm.value?.sorting === "toplist") {
+			const topRange = (p != null ? p['topRange'] : null) as string | null;
+			queryParts.push(`topRange=${topRange ?? this.filterForm.value?.topRange ?? "1M"}`);
 		}
 
 		// 宽高比 - 根据 wallpaperType 和 ratios 构建
@@ -281,13 +338,15 @@ export class WallhavenStore {
 		}
 
 		// 页码
-		if (params.page != null) {
-			queryParts.push(`page=${params.page.toString()}`);
+		const page = (p != null ? p['page'] : null) as number | null;
+		if (page != null) {
+			queryParts.push(`page=${page.toString()}`);
 		}
 
 		// 随机种子
-		if (params.seed != null && params.seed !== "") {
-			queryParts.push(`seed=${params.seed}`);
+		const seed = (p != null ? p['seed'] : null) as string | null;
+		if (seed != null && seed !== "") {
+			queryParts.push(`seed=${seed}`);
 		}
 
 		// API Key
@@ -304,7 +363,8 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						resolve(res.data as SearchResponse);
+						// 使用 any 中间类型绕过 UTS 类型检查
+						resolve(res.data as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}
@@ -319,7 +379,7 @@ export class WallhavenStore {
 	/**
 	 * 获取壁纸详情
 	 */
-	async getWallpaper(id: string): Promise<Wallpaper> {
+	async getWallpaper(id: string): Promise<any> {
 		let url = `${API_BASE}/w/${id}`;
 		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `?apikey=${this.apiKey.value}`;
@@ -332,8 +392,9 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						const response = res.data as WallpaperResponse;
-						resolve(response.data);
+						// 从响应中提取 data 字段
+						const response = res.data as UTSJSONObject;
+						resolve(response['data'] as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}
@@ -348,7 +409,7 @@ export class WallhavenStore {
 	/**
 	 * 获取用户收藏夹列表
 	 */
-	async getCollections(username: string | null = null): Promise<Collection[]> {
+	async getCollections(username: string | null = null): Promise<any> {
 		let url = `${API_BASE}/collections`;
 		if (username !== null && username !== "") {
 			url += `/${username}`;
@@ -364,8 +425,9 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						const response = res.data as CollectionsResponse;
-						resolve(response.data);
+						// 从响应中提取 data 字段
+						const response = res.data as UTSJSONObject;
+						resolve(response['data'] as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}
@@ -384,7 +446,7 @@ export class WallhavenStore {
 		username: string,
 		collectionId: number,
 		page: number = 1
-	): Promise<SearchResponse> {
+	): Promise<any> {
 		let url = `${API_BASE}/collections/${username}/${collectionId}?page=${page}`;
 		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `&apikey=${this.apiKey.value}`;
@@ -397,7 +459,8 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						resolve(res.data as SearchResponse);
+						// 直接返回 res.data
+						resolve(res.data as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}
