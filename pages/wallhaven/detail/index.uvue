@@ -28,11 +28,22 @@
 		</cl-topbar>
 
 		<!-- 壁纸显示区域 -->
-		<view class="wallpaper-container" v-if="wallpaper">
+		<view class="wallpaper-container">
+			<!-- 加载动画 -->
+			<view
+				class="absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-black z-10"
+				v-if="isLoading"
+			>
+				<cl-loading :size="50" color="white"></cl-loading>
+			</view>
+
+			<!-- 图片 -->
 			<image
+				v-if="wallpaper"
 				:src="wallpaper?.getString('path') ?? ''"
 				mode="aspectFit"
-				class="w-full h-full"
+				class="w-full h-full transition-opacity duration-300"
+				:class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }"
 				@tap="toggleFullscreen"
 				@load="onImageLoad"
 				:show-menu-by-longpress="true"
@@ -153,6 +164,11 @@ const wallpaperId = ref("");
 
 // 图片是否加载完成
 const imageLoaded = ref(false);
+
+// loading状态
+const isLoading = computed((): boolean => {
+	return !imageLoaded.value || wallpaper.value == null;
+});
 
 // 详情折叠状态
 const detailVisible = ref(false);

@@ -71,7 +71,7 @@
 import { ref, computed, onMounted } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
-import type { Wallpaper } from "@/types/wallhaven";
+import type { Wallpaper, SearchResponse } from "@/types/wallhaven";
 import WallpaperItem from "../components/wallpaper-item.uvue";
 
 const ui = useUi();
@@ -111,7 +111,7 @@ async function loadData() {
 			username.value,
 			collectionId.value,
 			currentPageNum
-		);
+		) as SearchResponse;
 
 		const newWallpapers = response.data;
 
