@@ -109,7 +109,12 @@
 		<view v-show="!showSearchHistory" class="wallpaper-container p-2">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
 				<template #item="{ item }">
-					<wallpaper-item :item="item" @tap="toDetail(item)"></wallpaper-item>
+					<wallpaper-item 
+						:item="item" 
+						:favorited="isFavorited(item)"
+						@tap="toDetail(item)"
+						@favorite="onFavorite"
+					></wallpaper-item>
 				</template>
 			</cl-waterfall>
 
@@ -885,6 +890,28 @@ function getFavorites(item: any): string {
 // 跳转到详情页
 function toDetail(item: UTSJSONObject) {
 	router?.to(`/pages/wallhaven/detail/index?id=${item.getString("id") ?? ""}`);
+}
+
+// 检查是否已收藏
+function isFavorited(item: any): boolean {
+	const obj = item as UTSJSONObject;
+	const id = obj.getString('id') ?? '';
+	return store.isFavorite(id);
+}
+
+// 处理收藏事件
+function onFavorite(data: any) {
+	const obj = data as UTSJSONObject;
+	const id = obj.getString('id') ?? '';
+	const favorited = obj.getBoolean('favorited') ?? false;
+	
+	if (favorited) {
+		store.addFavorite(id);
+		ui.showToast({ message: '已添加到收藏' });
+	} else {
+		store.removeFavorite(id);
+		ui.showToast({ message: '已取消收藏' });
+	}
 }
 
 // 跳转到在线收藏夹
