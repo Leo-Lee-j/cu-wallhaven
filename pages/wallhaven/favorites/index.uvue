@@ -32,7 +32,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, nextTick, onShow } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
 import WallpaperItem from "../components/wallpaper-item.uvue";
@@ -131,7 +131,7 @@ function removeFavorite(item: any) {
 }
 
 // 初始化
-onMounted(() => {
+onShow(() => {
 	loadFavorites();
 });
 </script>
