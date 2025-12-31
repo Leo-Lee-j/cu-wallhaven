@@ -4,7 +4,8 @@
 			"path": "pages/wallhaven/home/index",
 			"style": {
 				"navigationStyle": "custom",
-				"enablePullDownRefresh": true
+				"enablePullDownRefresh": true,
+				"onReachBottomDistance": 300
 			}
 		},
 		{
@@ -28,7 +29,8 @@
 		{
 			"path": "pages/wallhaven/favorites/index",
 			"style": {
-				"navigationBarTitleText": "本地收藏"
+				"navigationBarTitleText": "本地收藏",
+				"onReachBottomDistance": 300
 			}
 		},
 		{
@@ -40,7 +42,8 @@
 		{
 			"path": "pages/wallhaven/collection-detail/index",
 			"style": {
-				"navigationStyle": "custom"
+				"navigationStyle": "custom",
+				"onReachBottomDistance": 300
 			}
 		}
 	],
