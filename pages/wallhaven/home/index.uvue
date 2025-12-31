@@ -852,7 +852,8 @@ function getResolution(item: any): string {
 function getFavorites(item: any): string {
 	const obj = item as UTSJSONObject | null;
 	if (obj != null) {
-		return obj.getString('favorites') ?? "0";
+		const num = obj.getNumber('favorites');
+		return num != null ? num.toString() : "0";
 	}
 	return "0";
 }
