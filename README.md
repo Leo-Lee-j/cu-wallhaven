@@ -27,17 +27,15 @@ _探索和收藏世界上最精美的壁纸 - 一次开发，全端运行_
 
 <table>
   <tr>
-    <td align="center" width="33%">
-      <strong>首页瀑布流</strong><br/>
-      浏览海量精美壁纸
+    <td align="center" width="50%">
+      <img src="./snapshot/20251231173806_3_22.jpg" alt="Home"/>
+      <br/>
+      <strong>筛选</strong>
     </td>
-    <td align="center" width="33%">
-      <strong>筛选与搜索</strong><br/>
-      智能筛选快速定位
-    </td>
-    <td align="center" width="33%">
-      <strong>壁纸详情</strong><br/>
-      高清预览一键下载
+    <td align="center" width="50%">
+      <img src="./snapshot/20251231173807_4_22.jpg" alt="Detail"/>
+      <br/>
+      <strong>首页</strong>
     </td>
   </tr>
 </table>

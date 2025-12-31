@@ -3,7 +3,7 @@
 	"appid": "__UNI__6BFD0E5",
 	"description": "基于 Wallhaven API 的高颜值壁纸应用",
 	"versionName": "0.0.1",
-	"versionCode": "100",
+	"versionCode": "101",
 	"uni-app-x": {},
 	"quickapp": {},
 	"mp-weixin": {
