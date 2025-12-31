@@ -710,7 +710,10 @@ async function loadData() {
 			message: err.message ?? "加载失败"
 		});
 	} finally {
-		loading.value = false;
+		// 延迟结束加载，等待瀑布流渲染完成
+		setTimeout(() => {
+			loading.value = false;
+		}, 200);
 	}
 }
 
