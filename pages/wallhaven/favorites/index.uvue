@@ -12,10 +12,10 @@
 				<template #item="{ item }">
 					<view
 						class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3 relative"
-						@tap="toDetail(item as Wallpaper)"
+						@tap="toDetail(item)"
 					>
 						<image
-							:src="(item as Wallpaper).thumbs.small"
+							:src="getThumbnail(item)"
 							mode="widthFix"
 							class="w-full"
 							:lazy-load="true"
@@ -24,14 +24,14 @@
 						<!-- 取消收藏按钮 -->
 						<view
 							class="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center"
-							@tap.stop="removeFavorite(item as Wallpaper)"
+							@tap.stop="removeFavorite(item)"
 						>
 							<cl-icon name="heart-fill" :size="28" color="#ef4444"></cl-icon>
 						</view>
 
 						<view class="p-2 flex flex-row items-center justify-between">
 							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ (item as Wallpaper).resolution }}
+								{{ getResolution(item) }}
 							</cl-text>
 						</view>
 					</view>
@@ -54,7 +54,6 @@
 import { ref, onMounted, nextTick } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
-import type { Wallpaper } from "@/types/wallhaven";
 
 const ui = useUi();
 const { wallhaven } = useStore();
@@ -63,10 +62,31 @@ const { wallhaven } = useStore();
 const waterfallRef = ref<ClWaterfallComponentPublicInstance | null>(null);
 
 // 收藏列表
-const favorites = ref<Wallpaper[]>([]);
+const favorites = ref<UTSJSONObject[]>([]);
 
 // 加载状态
 const loading = ref(false);
+
+// 辅助函数:获取缩略图 URL
+function getThumbnail(item: any): string {
+    const obj = item as UTSJSONObject | null;
+    if (obj != null) {
+        const thumbs = obj['thumbs'] as UTSJSONObject | null;
+        if (thumbs != null) {
+            return thumbs.getString('small') ?? "";
+        }
+    }
+    return "";
+}
+
+// 辅助函数:获取分辨率
+function getResolution(item: any): string {
+    const obj = item as UTSJSONObject | null;
+    if (obj != null) {
+        return obj.getString('resolution') ?? "";
+    }
+    return "";
+}
 
 // 加载收藏的壁纸详情
 async function loadFavorites() {
@@ -80,12 +100,18 @@ async function loadFavorites() {
 	loading.value = true;
 
 	try {
-		const wallpapers: Wallpaper[] = [];
+		const wallpapers: UTSJSONObject[] = [];
 
 		for (const id of ids) {
 			try {
-				const wp = await wallhaven.getWallpaper(id);
-				wallpapers.push(wp);
+				const wpData = await wallhaven.getWallpaper(id);
+				// 直接使用 UTSJSONObject
+				const obj = wpData as UTSJSONObject;
+                // 确保有 thumbs 字段，防止空指针
+                if (obj['thumbs'] == null) {
+                    obj['thumbs'] = {} as UTSJSONObject;
+                }
+				wallpapers.push(obj);
 			} catch (err) {
 				// 忽略单个加载失败
 				console.error(`Failed to load wallpaper ${id}`, err);
@@ -97,8 +123,11 @@ async function loadFavorites() {
 		// 使用 nextTick 确保 v-if 条件变化后瀑布流组件渲染完成
 		await nextTick();
 		waterfallRef.value?.clear();
-		// @ts-ignore
-		waterfallRef.value?.append(wallpapers as UTSJSONObject[]);
+		
+        if (wallpapers.length > 0) {
+            // @ts-ignore
+            waterfallRef.value?.append(wallpapers);
+        }
 	} catch (err: any) {
 		ui.showToast({
 			message: err.message ?? "加载失败"
@@ -109,24 +138,28 @@ async function loadFavorites() {
 }
 
 // 跳转到详情页
-function toDetail(item: Wallpaper) {
-	router.to(`/pages/wallhaven/detail/index?id=${item.id}`);
+function toDetail(item: any) {
+    const obj = item as UTSJSONObject;
+	router.to(`/pages/wallhaven/detail/index?id=${obj.getString('id')}`);
 }
 
 // 取消收藏
-function removeFavorite(item: Wallpaper) {
+function removeFavorite(item: any) {
+    const obj = item as UTSJSONObject;
+    const id = obj.getString('id') ?? "";
+    
 	ui.showConfirm({
 		title: "提示",
 		message: "确定取消收藏吗？",
 		callback(action) {
 			if (action === "confirm") {
-				wallhaven.removeFavorite(item.id);
+				wallhaven.removeFavorite(id);
 
 				// 从列表中移除
-				const index = favorites.value.findIndex((w) => w.id === item.id);
+				const index = favorites.value.findIndex((w) => w.getString('id') === id);
 				if (index > -1) {
 					favorites.value.splice(index, 1);
-					waterfallRef.value?.remove(item.id);
+					waterfallRef.value?.remove(id);
 				}
 
 				ui.showToast({ message: "已取消收藏" });
@@ -134,11 +167,6 @@ function removeFavorite(item: Wallpaper) {
 		}
 	});
 }
-
-// 页面显示时刷新
-// onShow(() => {
-// 	loadFavorites();
-// });
 
 // 初始化
 onMounted(() => {
