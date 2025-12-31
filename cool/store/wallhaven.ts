@@ -38,7 +38,9 @@ export class WallhavenStore {
 		purity: ["sfw"],
 		sorting: "date_added",
 		topRange: "1M",
-		ratios: []
+		ratios: [],
+		wallpaperType: 'all',
+		colors: []
 	});
 
 	constructor() {
@@ -61,14 +63,78 @@ export class WallhavenStore {
 		if (username != null) {
 			this.username.value = username;
 		}
-		if (searchHistory != null && Array.isArray(searchHistory)) {
-			this.searchHistory.value = searchHistory as string[];
+		
+		// 处理 searchHistory - 如果是字符串则解析,否则直接使用
+		if (searchHistory != null) {
+			if (typeof searchHistory === 'string') {
+				// 检查字符串是否非空
+				if (searchHistory.trim().length > 0) {
+					try {
+						const parsed = JSON.parse(searchHistory);
+						if (Array.isArray(parsed)) {
+							this.searchHistory.value = parsed as string[];
+						}
+					} catch (err) {
+						console.error("解析 searchHistory 失败:", err);
+					}
+				}
+			} else if (Array.isArray(searchHistory)) {
+				this.searchHistory.value = searchHistory as string[];
+			}
 		}
-		if (localFavorites != null && Array.isArray(localFavorites)) {
-			this.localFavorites.value = localFavorites as string[];
+		
+		// 处理 localFavorites - 如果是字符串则解析,否则直接使用
+		if (localFavorites != null) {
+			if (typeof localFavorites === 'string') {
+				// 检查字符串是否非空
+				if (localFavorites.trim().length > 0) {
+					try {
+						const parsed = JSON.parse(localFavorites);
+						if (Array.isArray(parsed)) {
+							this.localFavorites.value = parsed as string[];
+						}
+					} catch (err) {
+						console.error("解析 localFavorites 失败:", err);
+					}
+				}
+			} else if (Array.isArray(localFavorites)) {
+				this.localFavorites.value = localFavorites as string[];
+			}
 		}
+		
+		//处理 filterForm - 如果是字符串则解析,否则直接使用
 		if (filterForm != null) {
-			this.filterForm.value = filterForm as FilterForm;
+			if (typeof filterForm === 'string') {
+				// 检查字符串是否非空
+				if (filterForm.trim().length > 0) {
+					try {
+						const parsed = JSON.parse(filterForm);
+						if (parsed != null && typeof parsed === 'object') {
+							// 手动构建 FilterForm 对象 - 逐个属性赋值
+							const obj = parsed as UTSJSONObject;
+							this.filterForm.value.categories = obj['categories'] as string[] ?? ["general", "anime", "people"];
+							this.filterForm.value.purity = obj['purity'] as string[] ?? ["sfw"];
+							this.filterForm.value.sorting = obj['sorting'] as string ?? "date_added";
+							this.filterForm.value.topRange = obj['topRange'] as string ?? "1M";
+							this.filterForm.value.ratios = obj['ratios'] as string[] ?? [];
+							this.filterForm.value.wallpaperType = (obj['wallpaperType'] as 'all' | 'pc' | 'mobile') ?? 'all';
+							this.filterForm.value.colors = obj['colors'] as string[] ?? [];
+						}
+					} catch (err) {
+						console.error("解析 filterForm 失败:", err);
+					}
+				}
+			} else if (typeof filterForm === 'object') {
+			// 手动构建 FilterForm 对象 - 逐个属性赋值
+			const obj = filterForm as UTSJSONObject;
+			this.filterForm.value.categories = obj['categories'] as string[] ?? ["general", "anime", "people"];
+			this.filterForm.value.purity = obj['purity'] as string[] ?? ["sfw"];
+			this.filterForm.value.sorting = obj['sorting'] as string ?? "date_added";
+			this.filterForm.value.topRange = obj['topRange'] as string ?? "1M";
+			this.filterForm.value.ratios = obj['ratios'] as string[] ?? [];
+			this.filterForm.value.wallpaperType = (obj['wallpaperType'] as 'all' | 'pc' | 'mobile') ?? 'all';
+			this.filterForm.value.colors = obj['colors'] as string[] ?? [];
+		}
 		}
 	}
 
@@ -169,12 +235,11 @@ export class WallhavenStore {
 	/**
 	 * 构建请求头
 	 */
-	private buildHeaders(): Record<string, string> {
-		const headers: Record<string, string> = {};
-		if (this.apiKey.value) {
-			headers["X-API-Key"] = this.apiKey.value;
+	private buildHeaders(): UTSJSONObject {
+		if (this.apiKey.value !== "") {
+			return { "X-API-Key": this.apiKey.value } as UTSJSONObject;
 		}
-		return headers;
+		return {} as UTSJSONObject;
 	}
 
 	/**
@@ -208,57 +273,122 @@ export class WallhavenStore {
 	}
 
 	/**
+	 * 构建宽高比参数，根据 wallpaperType 和 ratios 合并
+	 */
+	private buildRatios(): string {
+		const wallpaperType = this.filterForm.value?.wallpaperType ?? 'all';
+		const customRatios = this.filterForm.value?.ratios ?? [];
+		
+		const ratioList: string[] = [];
+		
+		// 根据壁纸类型添加预设比例
+		if (wallpaperType === 'pc') {
+			// PC壁纸 - 横屏比例
+			ratioList.push('16x9', '16x10', '21x9', '32x9', '4x3', '5x4');
+			console.log('[筛选] PC壁纸模式,添加横屏比例');
+		} else if (wallpaperType === 'mobile') {
+			// 手机壁纸 - 竖屏比例
+			ratioList.push('9x16', '10x16', '9x18', '9x19.5', '9x20');
+			console.log('[筛选] 手机壁纸模式,添加竖屏比例');
+		} else {
+			console.log('[筛选] 全部壁纸模式,不限制宽高比');
+		}
+		
+		// 添加自定义比例，去重
+		if (customRatios != null && Array.isArray(customRatios) && customRatios.length > 0) {
+			console.log('[筛选] 自定义比例:', customRatios);
+			for (const ratio of customRatios) {
+				if (!ratioList.includes(ratio)) {
+					ratioList.push(ratio);
+				}
+			}
+		}
+		
+		const result = ratioList.join(',');
+		console.log('[筛选] 最终宽高比参数:', result === '' ? '无限制' : result);
+		return result;
+	}
+
+	/**
 	 * 搜索壁纸
 	 */
-	async search(params: SearchParams = {}): Promise<SearchResponse> {
-		const searchParams = new URLSearchParams();
+	async search(params: any = {}): Promise<any> {
+		// 打印当前筛选状态
+		console.log('[筛选] ===== 开始构建搜索参数 =====');
+		console.log('[筛选] 当前 wallpaperType:', this.filterForm.value?.wallpaperType);
+		console.log('[筛选] 当前 categories:', this.filterForm.value?.categories);
+		console.log('[筛选] 当前 purity:', this.filterForm.value?.purity);
+		console.log('[筛选] 当前 sorting:', this.filterForm.value?.sorting);
+		console.log('[筛选] 当前 ratios:', this.filterForm.value?.ratios);
+		console.log('[筛选] 当前 colors:', this.filterForm.value?.colors);
+		
+		const queryParts: string[] = [];
+		
+		// 将 params 转换为 UTSJSONObject 以访问属性
+		const p = params as UTSJSONObject;
 
 		// 关键词
-		if (params.q) {
-			searchParams.append("q", params.q);
+		const q =  (p != null ? p['q'] : null) as string | null;
+		if (q != null && q !== "") {
+			queryParts.push(`q=${encodeURIComponent(q)}`);
 		}
 
 		// 分类
-		searchParams.append("categories", params.categories || this.buildCategories());
+		const categories = (p != null ? p['categories'] : null) as string | null;
+		queryParts.push(`categories=${categories ?? this.buildCategories()}`);
 
 		// 纯度
-		searchParams.append("purity", params.purity || this.buildPurity());
+		const purity = (p != null ? p['purity'] : null) as string | null;
+		queryParts.push(`purity=${purity ?? this.buildPurity()}`);
 
 		// 排序
-		searchParams.append("sorting", params.sorting || this.filterForm.value?.sorting || "date_added");
+		const sorting = (p != null ? p['sorting'] : null) as string | null;
+		queryParts.push(`sorting=${sorting ?? this.filterForm.value?.sorting ?? "date_added"}`);
 
 		// 排序顺序
-		if (params.order) {
-			searchParams.append("order", params.order);
+		const order = (p != null ? p['order'] : null) as string | null;
+		if (order != null) {
+			queryParts.push(`order=${order}`);
 		}
 
 		// 热门时间范围
-		if (params.sorting === "toplist" || this.filterForm.value?.sorting === "toplist") {
-			searchParams.append("topRange", params.topRange || this.filterForm.value?.topRange || "1M");
+		if (sorting === "toplist" || this.filterForm.value?.sorting === "toplist") {
+			const topRange = (p != null ? p['topRange'] : null) as string | null;
+			queryParts.push(`topRange=${topRange ?? this.filterForm.value?.topRange ?? "1M"}`);
 		}
 
-		// 宽高比
-		const ratios = this.filterForm.value?.ratios;
-		if (ratios != null && Array.isArray(ratios) && ratios.length > 0) {
-			searchParams.append("ratios", ratios.join(","));
+		// 宽高比 - 根据 wallpaperType 和 ratios 构建
+		const ratiosParam = this.buildRatios();
+		if (ratiosParam !== "") {
+			queryParts.push(`ratios=${ratiosParam}`);
+		}
+
+		// 颜色筛选
+		const colors = this.filterForm.value?.colors;
+		if (colors !== null && Array.isArray(colors) && colors.length > 0) {
+			queryParts.push(`colors=${colors.join(",")}`);
 		}
 
 		// 页码
-		if (params.page) {
-			searchParams.append("page", params.page.toString());
+		const page = (p != null ? p['page'] : null) as number | null;
+		if (page != null) {
+			queryParts.push(`page=${page.toString()}`);
 		}
 
 		// 随机种子
-		if (params.seed) {
-			searchParams.append("seed", params.seed);
+		const seed = (p != null ? p['seed'] : null) as string | null;
+		if (seed != null && seed !== "") {
+			queryParts.push(`seed=${seed}`);
 		}
 
 		// API Key
-		if (this.apiKey.value) {
-			searchParams.append("apikey", this.apiKey.value);
+		if (this.apiKey.value !== "") {
+			queryParts.push(`apikey=${this.apiKey.value}`);
 		}
 
-		const url = `${API_BASE}/search?${searchParams.toString()}`;
+		const url = `${API_BASE}/search?${queryParts.join("&")}`;
+		console.log('[筛选] 最终请求 URL:', url);
+		console.log('[筛选] ===== 参数构建完成 =====');
 
 		return new Promise((resolve, reject) => {
 			uni.request({
@@ -267,7 +397,8 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						resolve(res.data as SearchResponse);
+						// 使用 any 中间类型绕过 UTS 类型检查
+						resolve(res.data as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}
@@ -282,9 +413,9 @@ export class WallhavenStore {
 	/**
 	 * 获取壁纸详情
 	 */
-	async getWallpaper(id: string): Promise<Wallpaper> {
+	async getWallpaper(id: string): Promise<any> {
 		let url = `${API_BASE}/w/${id}`;
-		if (this.apiKey.value) {
+		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `?apikey=${this.apiKey.value}`;
 		}
 
@@ -295,8 +426,9 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						const response = res.data as WallpaperResponse;
-						resolve(response.data);
+						// 从响应中提取 data 字段
+						const response = res.data as UTSJSONObject;
+						resolve(response['data'] as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}
@@ -311,12 +443,12 @@ export class WallhavenStore {
 	/**
 	 * 获取用户收藏夹列表
 	 */
-	async getCollections(username?: string): Promise<Collection[]> {
+	async getCollections(username: string | null = null): Promise<any> {
 		let url = `${API_BASE}/collections`;
-		if (username) {
+		if (username !== null && username !== "") {
 			url += `/${username}`;
 		}
-		if (this.apiKey.value) {
+		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `?apikey=${this.apiKey.value}`;
 		}
 
@@ -327,8 +459,9 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						const response = res.data as CollectionsResponse;
-						resolve(response.data);
+						// 从响应中提取 data 字段
+						const response = res.data as UTSJSONObject;
+						resolve(response['data'] as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}
@@ -347,9 +480,9 @@ export class WallhavenStore {
 		username: string,
 		collectionId: number,
 		page: number = 1
-	): Promise<SearchResponse> {
+	): Promise<any> {
 		let url = `${API_BASE}/collections/${username}/${collectionId}?page=${page}`;
-		if (this.apiKey.value) {
+		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
 			url += `&apikey=${this.apiKey.value}`;
 		}
 
@@ -360,7 +493,8 @@ export class WallhavenStore {
 				header: this.buildHeaders(),
 				success: (res) => {
 					if (res.statusCode === 200) {
-						resolve(res.data as SearchResponse);
+						// 直接返回 res.data
+						resolve(res.data as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
 					}

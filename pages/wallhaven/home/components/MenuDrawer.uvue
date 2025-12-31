@@ -1,0 +1,146 @@
+<template>
+	<cl-popup
+		:model-value="visible"
+		direction="left"
+		size="75%"
+		:show-header="false"
+		@update:model-value="onUpdateVisible"
+	>
+		<view class="flex flex-col h-full bg-surface-50 dark:!bg-surface-900">
+			<!-- 用户信息区域 - 渐变背景 -->
+			<view class="drawer-header px-5 pt-[100rpx] pb-6 flex flex-col items-center">
+				<cl-avatar
+					:size="140"
+					src="/static/wallhaven-logo.png"
+					:pt="{ className: 'border-4 border-white/20' }"
+				></cl-avatar>
+				<cl-text :pt="{ className: 'mt-4 text-white text-lg font-bold' }">
+					{{ store.username.value !== "" ? store.username.value : "未设置用户名" }}
+				</cl-text>
+				<cl-text
+					v-if="store.apiKey.value"
+					:pt="{ className: 'mt-1 text-white/70 text-xs' }"
+				>
+					API Key 已配置
+				</cl-text>
+			</view>
+
+			<!-- 菜单列表 -->
+			<scroll-view scroll-y class="flex-1 py-3">
+				<view class="px-3">
+					<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">收藏</cl-text>
+					<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
+						<cl-list-item
+							label="在线收藏夹"
+							icon="cloud-line"
+							arrow
+							hoverable
+							@tap="toCollections"
+							:pt="{ icon: { color: '#6366f1' } }"
+						></cl-list-item>
+						<cl-list-item
+							label="本地收藏夹"
+							icon="heart-line"
+							arrow
+							hoverable
+							@tap="toFavorites"
+							:pt="{ icon: { color: '#ef4444' } }"
+						></cl-list-item>
+					</view>
+				</view>
+
+				<view class="px-3 mt-4">
+					<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">更多</cl-text>
+					<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
+						<cl-list-item
+							label="设置"
+							icon="settings-line"
+							arrow
+							hoverable
+							@tap="toSettings"
+							:pt="{ icon: { color: '#8b5cf6' } }"
+						></cl-list-item>
+						<cl-list-item
+							label="关于"
+							icon="at-line"
+							arrow
+							hoverable
+							@tap="toAbout"
+							:pt="{ icon: { color: '#06b6d4' } }"
+						></cl-list-item>
+					</view>
+				</view>
+			</scroll-view>
+
+			<cl-safe-area type="bottom"></cl-safe-area>
+		</view>
+	</cl-popup>
+</template>
+
+<script lang="ts" setup>
+import { router, useStore } from "@/cool";
+
+const { wallhaven } = useStore();
+const store = wallhaven;
+
+const props = defineProps({
+	visible: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const emit = defineEmits(["update:visible"]);
+
+function onUpdateVisible(val: boolean) {
+	emit("update:visible", val);
+}
+
+// 跳转到在线收藏夹
+function toCollections() {
+	emit("update:visible", false);
+	router?.to("/pages/wallhaven/collections/index");
+}
+
+// 跳转到本地收藏
+function toFavorites() {
+	emit("update:visible", false);
+	router?.to("/pages/wallhaven/favorites/index");
+}
+
+// 跳转到设置
+function toSettings() {
+	emit("update:visible", false);
+	router?.to("/pages/wallhaven/settings/index");
+}
+
+// 跳转到关于
+function toAbout() {
+	emit("update:visible", false);
+	router?.to("/pages/wallhaven/about/index");
+}
+</script>
+
+<style lang="scss" scoped>
+// 覆盖抽屉高度，使其撑满屏幕
+// 注意：在组件中使用 scoped 样式时，对于 cl-popup-wrapper 这种全局或外部样式，
+// 可能需要使用 :deep() 或者确保样式能穿透影响。
+// 这里简单起见，我们假设外部已处理或者 uvue 样式隔离机制允许。
+// 如果需要在组件内完全控制，可能需要更具体的样式或者全局样式。
+// 在原代码中：
+// :deep(.cl-popup-wrapper--left),
+// :deep(.cl-popup-wrapper--right) {
+// 	.cl-popup {
+// 		height: 100% !important;
+// 	}
+// }
+// 这种 deep 选择器在 uvue 中可能行为不同，暂时保留默认样式，
+// 如果高度有问题，可以在父组件或全局样式中修复。
+// 这里只保留抽屉头部的背景样式。
+
+// 抽屉头部渐变背景
+.drawer-header {
+	background-color: #6366f1;
+	background-image: linear-gradient(to bottom right, #6366f1, #8b5cf6, #a855f7);
+}
+</style>

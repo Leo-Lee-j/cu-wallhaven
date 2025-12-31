@@ -1,5 +1,9 @@
 <template>
-	<cl-page>
+	<cl-page 
+		:back-top="true"
+		:lower-threshold="300"
+		@scrolltolower="loadData"
+	>
 		<!-- 顶部导航栏 -->
 		<cl-topbar
 			fixed
@@ -10,8 +14,9 @@
 			}"
 		>
 			<view class="flex flex-row items-center p-3 flex-1 w-full">
-				<!-- 左侧菜单按钮 -->
+				<!-- 左侧菜单按钮（搜索模式下隐藏） -->
 				<view
+					v-if="!showSearchHistory"
 					class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
 					@tap="openLeftDrawer"
 				>
@@ -19,7 +24,7 @@
 				</view>
 
 				<!-- 中间搜索框 -->
-				<view class="flex-1 mx-3 relative">
+				<view class="flex-1 mx-3" @tap="onSearchFocus">
 					<cl-input
 						v-model="searchKeyword"
 						placeholder="搜索壁纸..."
@@ -28,385 +33,82 @@
 						:pt="{
 							className: 'rounded-full'
 						}"
-						@focus="showSearchHistory = true"
 						@confirm="onSearch"
 					></cl-input>
-
-					<!-- 搜索历史下拉 -->
-					<cl-collapse v-model="showSearchHistory">
-						<view
-							class="absolute left-0 right-0 bg-white dark:!bg-surface-800 rounded-xl shadow-lg mt-1 z-50 max-h-[300px] overflow-hidden"
-							v-if="hasSearchHistory"
-						>
-							<view class="flex flex-row items-center justify-between p-3 border-b border-surface-100 dark:!border-surface-700">
-								<cl-text :pt="{ className: 'text-sm text-surface-500' }">搜索历史</cl-text>
-								<cl-text
-									:pt="{ className: 'text-sm text-primary-500' }"
-									@tap="clearSearchHistory"
-								>清空</cl-text>
-							</view>
-							<scroll-view scroll-y class="max-h-[250px]">
-								<view
-									v-for="(item, index) in store.searchHistory.value"
-									:key="index"
-									class="flex flex-row items-center p-3 border-b border-surface-50 dark:!border-surface-700"
-									@tap="onHistoryClick(item)"
-								>
-									<cl-icon name="time-line" :size="32" color="gray"></cl-icon>
-									<cl-text :pt="{ className: 'flex-1 ml-2' }">{{ item }}</cl-text>
-									<cl-icon
-										name="close-line"
-										:size="32"
-										color="gray"
-										@tap.stop="removeHistory(item)"
-									></cl-icon>
-								</view>
-							</scroll-view>
-						</view>
-					</cl-collapse>
 				</view>
 
-				<!-- 右侧筛选按钮 -->
-				<view
-					class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
-					@tap="openRightDrawer"
-				>
-					<cl-icon name="filter-line" :size="40"></cl-icon>
+				<!-- 右侧按钮：搜索模式下显示取消，正常模式显示刷新和筛选 -->
+				<view v-if="showSearchHistory">
+					<cl-text
+						:pt="{ className: 'text-primary-500' }"
+						@tap="cancelSearch"
+					>取消
+					</cl-text>
+				</view>
+				<view v-else class="flex flex-row items-center">
+					<!-- 刷新按钮 -->
+					<view
+						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700 mr-2"
+						@tap="onRefreshClick"
+					>
+						<cl-icon name="refresh-line" :size="40"></cl-icon>
+					</view>
+					<!-- 筛选按钮 -->
+					<view
+						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
+						@tap="openRightDrawer"
+					>
+						<cl-icon name="filter-line" :size="40"></cl-icon>
+					</view>
 				</view>
 			</view>
 		</cl-topbar>
 
-		<!-- 壁纸列表 -->
-		<view class="p-2">
+		<!-- 搜索历史组件 -->
+		<search-history
+			:visible="showSearchHistory"
+			@search="onHistorySearch"
+			@close="showSearchHistory = false"
+		></search-history>
+
+		<!-- 壁纸列表（带过渡动画） -->
+		<view v-show="!showSearchHistory" class="wallpaper-container p-2">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
 				<template #item="{ item }">
-					<view
-						class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3"
+					<wallpaper-item 
+						:item="item" 
+						:favorited="isFavorited(item)"
 						@tap="toDetail(item)"
-					>
-						<image
-							:src="item['thumbs']['original']"
-							mode="widthFix"
-							class="w-full"
-							:lazy-load="true"
-						></image>
-						<view class="p-2 flex flex-row items-center justify-between">
-							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ item['resolution'] }}
-							</cl-text>
-							<view class="flex flex-row items-center">
-								<cl-icon name="heart-line" :size="28" color="gray"></cl-icon>
-								<cl-text :pt="{ className: 'text-xs text-surface-400 ml-1' }">
-									{{ item['favorites'] }}
-								</cl-text>
-							</view>
-						</view>
-					</view>
+						@favorite="onFavorite"
+					></wallpaper-item>
 				</template>
 			</cl-waterfall>
 
-			<cl-loadmore :loading="loading" :finished="finished" safe-area-bottom></cl-loadmore>
+			<view class="h-12 flex flex-row items-center justify-center w-full">
+				<cl-loadmore :loading="loading" :finished="finished"></cl-loadmore>
+			</view>
 		</view>
 
-		<!-- 左侧抽屉菜单 -->
-		<cl-popup
-			v-model="leftDrawerVisible"
-			direction="left"
-			size="70%"
-			:show-header="false"
-		>
-			<view class="flex flex-col h-full">
-				<!-- 用户信息区域 -->
-				<view class="p-5 pt-[80rpx] bg-primary-500">
-					<cl-avatar :size="120" src="" icon="user-line"></cl-avatar>
-					<cl-text :pt="{ className: 'mt-3 text-white text-lg' }">
-						{{ store.username || '未设置用户名' }}
-					</cl-text>
-				</view>
+		<!-- 左侧抽屉菜单组件 -->
+		<menu-drawer v-model:visible="leftDrawerVisible"></menu-drawer>
 
-				<!-- 菜单列表 -->
-				<scroll-view scroll-y class="flex-1">
-					<cl-list>
-						<cl-list-item
-							label="在线收藏夹"
-							icon="folder-line"
-							arrow
-							hoverable
-							@tap="toCollections"
-						></cl-list-item>
-						<cl-list-item
-							label="本地收藏夹"
-							icon="heart-line"
-							arrow
-							hoverable
-							@tap="toFavorites"
-						></cl-list-item>
-					</cl-list>
-
-					<cl-list :pt="{ className: 'mt-3' }">
-						<cl-list-item
-							label="设置"
-							icon="settings-line"
-							arrow
-							hoverable
-							@tap="toSettings"
-						></cl-list-item>
-						<cl-list-item
-							label="关于"
-							icon="information-line"
-							arrow
-							hoverable
-							@tap="toAbout"
-						></cl-list-item>
-					</cl-list>
-				</scroll-view>
-
-				<cl-safe-area type="bottom"></cl-safe-area>
-			</view>
-		</cl-popup>
-
-		<!-- 右侧筛选抽屉 -->
-		<cl-popup
-			v-model="rightDrawerVisible"
-			direction="right"
-			size="80%"
-			:show-header="false"
-		>
-			<view class="flex flex-col h-full">
-				<view class="p-4 border-b border-surface-100 dark:!border-surface-700">
-					<cl-text :pt="{ className: 'text-lg font-bold' }">筛选</cl-text>
-				</view>
-
-				<scroll-view scroll-y class="flex-1">
-					<cl-form :pt="{ className: 'p-3' }">
-						<!-- 分类 -->
-						<cl-form-item label="分类">
-							<cl-row :gutter="16">
-								<cl-col :span="8">
-									<cl-checkbox
-										v-model="filterForm.categories"
-										label="General"
-										value="general"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.categories.includes('general'),
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-sm' }
-										}"
-									></cl-checkbox>
-								</cl-col>
-								<cl-col :span="8">
-									<cl-checkbox
-										v-model="filterForm.categories"
-										label="Anime"
-										value="anime"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.categories.includes('anime'),
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-sm' }
-										}"
-									></cl-checkbox>
-								</cl-col>
-								<cl-col :span="8">
-									<cl-checkbox
-										v-model="filterForm.categories"
-										label="People"
-										value="people"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.categories.includes('people'),
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-sm' }
-										}"
-									></cl-checkbox>
-								</cl-col>
-							</cl-row>
-						</cl-form-item>
-
-						<!-- 内容分级 -->
-						<cl-form-item label="内容分级">
-							<cl-row :gutter="16">
-								<cl-col :span="8">
-									<cl-checkbox
-										v-model="filterForm.purity"
-										label="SFW"
-										value="sfw"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.purity.includes('sfw'),
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-sm' }
-										}"
-									></cl-checkbox>
-								</cl-col>
-								<cl-col :span="8">
-									<cl-checkbox
-										v-model="filterForm.purity"
-										label="Sketchy"
-										value="sketchy"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.purity.includes('sketchy'),
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-sm' }
-										}"
-									></cl-checkbox>
-								</cl-col>
-								<cl-col :span="8">
-									<cl-checkbox
-										v-model="filterForm.purity"
-										label="NSFW"
-										value="nsfw"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.purity.includes('nsfw'),
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-sm' }
-										}"
-									></cl-checkbox>
-								</cl-col>
-							</cl-row>
-						</cl-form-item>
-
-						<!-- 排序方式 -->
-						<cl-form-item label="排序方式">
-							<cl-row :gutter="16">
-								<cl-col :span="6" v-for="item in sortingOptions" :key="item.value">
-									<cl-radio
-										v-model="filterForm.sorting"
-										:label="item.label"
-										:value="item.value"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.sorting == item.value,
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-xs' }
-										}"
-									></cl-radio>
-								</cl-col>
-							</cl-row>
-						</cl-form-item>
-
-						<!-- 热门时间范围 -->
-						<cl-form-item label="热门时间范围" v-if="filterForm.sorting === 'toplist'">
-							<cl-row :gutter="16">
-								<cl-col :span="6" v-for="item in topRangeOptions" :key="item.value">
-									<cl-radio
-										v-model="filterForm.topRange"
-										:label="item.label"
-										:value="item.value"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.topRange == item.value,
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-xs' }
-										}"
-									></cl-radio>
-								</cl-col>
-							</cl-row>
-						</cl-form-item>
-
-						<!-- 宽高比 -->
-						<cl-form-item label="宽高比">
-							<cl-row :gutter="16">
-								<cl-col :span="6" v-for="item in ratioOptions" :key="item.value">
-									<cl-checkbox
-										v-model="filterForm.ratios"
-										:label="item.label"
-										:value="item.value"
-										:show-icon="false"
-										:pt="{
-											className: parseClass([
-												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-												[isDark, 'bg-surface-800', 'bg-surface-100'],
-												[
-													filterForm.ratios.includes(item.value),
-													`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-												]
-											]),
-											label: { className: 'text-xs' }
-										}"
-									></cl-checkbox>
-								</cl-col>
-							</cl-row>
-						</cl-form-item>
-					</cl-form>
-				</scroll-view>
-
-				<!-- 底部按钮 -->
-				<view class="flex flex-row p-3 border-t border-surface-100 dark:!border-surface-700">
-					<cl-button
-						type="info"
-						text
-						:pt="{ className: 'flex-1 mr-2' }"
-						@tap="resetFilter"
-					>重置</cl-button>
-					<cl-button
-						:pt="{ className: 'flex-1' }"
-						@tap="applyFilter"
-					>确定</cl-button>
-				</view>
-
-				<cl-safe-area type="bottom"></cl-safe-area>
-			</view>
-		</cl-popup>
+		<!-- 右侧筛选抽屉组件 -->
+		<filter-drawer 
+			v-model:visible="rightDrawerVisible" 
+			@confirm="refreshList"
+		></filter-drawer>
 	</cl-page>
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, computed, onMounted } from "vue";
-import { router, useStore, isDark, parseClass } from "@/cool";
+import { ref, onMounted } from "vue";
+import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
-import type { Wallpaper, FilterForm } from "@/types/wallhaven";
+import type { Wallpaper } from "@/types/wallhaven";
+import WallpaperItem from "../components/wallpaper-item.uvue";
+import FilterDrawer from "./components/FilterDrawer.uvue";
+import MenuDrawer from "./components/MenuDrawer.uvue";
+import SearchHistory from "./components/SearchHistory.uvue";
 
 const ui = useUi();
 const { wallhaven } = useStore();
@@ -420,11 +122,6 @@ const searchKeyword = ref("");
 
 // 搜索历史显示
 const showSearchHistory = ref(false);
-
-// 是否有搜索历史
-const hasSearchHistory = computed<boolean>(() : boolean => {
-	return store.searchHistory.value.length >= 1;
-});
 
 // 左侧抽屉
 const leftDrawerVisible = ref(false);
@@ -440,125 +137,76 @@ const finished = ref(false);
 let currentPage = 1;
 
 // 随机种子（用于 random 排序时保持分页一致性）
-let randomSeed = "";
+let randomSeed: string | null = null;
 
-// 筛选表单（本地副本）- 使用默认值初始化
-const filterForm = reactive<FilterForm>({
-	categories: ["general", "anime", "people"],
-	purity: ["sfw"],
-	sorting: "date_added",
-	topRange: "1M",
-	ratios: [] as string[]
-});
+// 加载数据
+async function loadData() {
+	if (loading.value || finished.value) return;
 
-// 从 store 同步筛选表单数据
-function syncFilterFormFromStore() {
-	const storeForm = store.filterForm.value;
-	if (storeForm != null) {
-		if (storeForm.categories != null && Array.isArray(storeForm.categories)) {
-			filterForm.categories = [...storeForm.categories];
+	loading.value = true;
+
+	try {
+		console.log("开始请求数据，参数:", {
+			q: searchKeyword.value !== "" ? searchKeyword.value : null,
+			page: currentPage,
+			seed: randomSeed
+		});
+
+		const response = await store.search({
+			q: searchKeyword.value !== "" ? searchKeyword.value : null,
+			page: currentPage,
+			seed: randomSeed
+		} as any);
+
+		console.log("请求成功，返回数据:", response);
+
+		// 将 response 转换为 UTSJSONObject 以访问属性
+		const jsonResponse = response as UTSJSONObject;
+		const wallpapers = jsonResponse['data'] as any[];
+
+		if (wallpapers.length === 0) {
+			console.log("返回数据为空");
+			finished.value = true;
+		} else {
+			console.log(`获取到 ${wallpapers.length} 条数据，准备追加到瀑布流`);
+			
+			if (waterfallRef.value == null) {
+				console.error("waterfallRef 为空，无法追加数据！");
+			} else {
+				// @ts-ignore
+				waterfallRef.value?.append(wallpapers as UTSJSONObject[]);
+			}
+
+			// 保存随机种子
+			const meta = jsonResponse['meta'] as UTSJSONObject | null;
+			if (meta != null) {
+				const seed = meta?.getString('seed');
+				if (seed != null) {
+					randomSeed = seed;
+				}
+			}
+
+			// 检查是否最后一页
+			if (meta != null) {
+				const lastPage = meta?.getNumber('last_page') ?? 1;
+				if (currentPage >= lastPage) {
+					finished.value = true;
+				} else {
+					currentPage++;
+				}
+			}
 		}
-		if (storeForm.purity != null && Array.isArray(storeForm.purity)) {
-			filterForm.purity = [...storeForm.purity];
-		}
-		if (storeForm.sorting != null) {
-			filterForm.sorting = storeForm.sorting;
-		}
-		if (storeForm.topRange != null) {
-			filterForm.topRange = storeForm.topRange;
-		}
-		if (storeForm.ratios != null && Array.isArray(storeForm.ratios)) {
-			filterForm.ratios = [...storeForm.ratios];
-		}
+	} catch (err: any) {
+		console.error("请求数据出错:", err);
+		ui.showToast({
+			message: err.message ?? "加载失败"
+		});
+	} finally {
+		// 延迟结束加载，等待瀑布流渲染完成
+		setTimeout(() => {
+			loading.value = false;
+		}, 200);
 	}
-}
-
-// 排序选项
-const sortingOptions = ref([
-	{ label: "最新", value: "date_added" },
-	{ label: "热门", value: "toplist" },
-	{ label: "随机", value: "random" },
-	{ label: "浏览", value: "views" }
-]);
-
-// 热门时间范围选项
-const topRangeOptions = ref([
-	{ label: "1天", value: "1d" },
-	{ label: "3天", value: "3d" },
-	{ label: "1周", value: "1w" },
-	{ label: "1月", value: "1M" },
-	{ label: "3月", value: "3M" },
-	{ label: "6月", value: "6M" },
-	{ label: "1年", value: "1y" }
-]);
-
-// 宽高比选项
-const ratioOptions = ref([
-	{ label: "16x9", value: "16x9" },
-	{ label: "16x10", value: "16x10" },
-	{ label: "21x9", value: "21x9" },
-	{ label: "32x9", value: "32x9" },
-	{ label: "9x16", value: "9x16" },
-	{ label: "10x16", value: "10x16" }
-]);
-
-// 打开左侧抽屉
-function openLeftDrawer() {
-	leftDrawerVisible.value = true;
-}
-
-// 打开右侧抽屉
-function openRightDrawer() {
-	rightDrawerVisible.value = true;
-}
-
-// 搜索
-function onSearch() {
-	if (searchKeyword.value.trim()) {
-		store.addSearchHistory(searchKeyword.value.trim());
-	}
-	showSearchHistory.value = false;
-	refreshList();
-}
-
-// 点击搜索历史
-function onHistoryClick(keyword: string) {
-	searchKeyword.value = keyword;
-	showSearchHistory.value = false;
-	refreshList();
-}
-
-// 移除单条历史
-function removeHistory(keyword: string) {
-	store.removeSearchHistory(keyword);
-}
-
-// 清空搜索历史
-function clearSearchHistory() {
-	store.clearSearchHistory();
-	showSearchHistory.value = false;
-}
-
-// 重置筛选
-function resetFilter() {
-	filterForm.categories = ["general", "anime", "people"];
-	filterForm.purity = ["sfw"];
-	filterForm.sorting = "date_added";
-	filterForm.topRange = "1M";
-	filterForm.ratios = [];
-}
-
-// 应用筛选
-function applyFilter() {
-	store.setFilterForm({
-		categories: [...filterForm.categories],
-		purity: [...filterForm.purity],
-		sorting: filterForm.sorting,
-		topRange: filterForm.topRange,
-		ratios: [...filterForm.ratios]
-	});
-	rightDrawerVisible.value = false;
-	refreshList();
 }
 
 // 刷新列表
@@ -570,89 +218,109 @@ async function refreshList() {
 	await loadData();
 }
 
-// 加载数据
-async function loadData() {
-	if (loading.value || finished.value) return;
+// 打开左侧抽屉
+function openLeftDrawer() {
+	leftDrawerVisible.value = true;
+}
 
-	loading.value = true;
+// 打开右侧抽屉
+function openRightDrawer() {
+	rightDrawerVisible.value = true;
+}
 
-	try {
-		const response = await store.search({
-			q: searchKeyword.value || undefined,
-			page: currentPage,
-			seed: randomSeed || undefined
-		});
+// 点击刷新按钮
+function onRefreshClick() {
+	refreshList();
+}
 
-		console.log(response);
+// 搜索框聚焦 - 进入搜索模式
+function onSearchFocus() {
+	showSearchHistory.value = true;
+}
 
-		const wallpapers = response.data;
+// 取消搜索 - 退出搜索模式
+function cancelSearch() {
+	showSearchHistory.value = false;
+	searchKeyword.value = "";
+}
 
-		if (wallpapers.length === 0) {
-			finished.value = true;
-		} else {
-			waterfallRef.value?.append(wallpapers as unknown as UTSJSONObject[]);
+// 搜索
+function onSearch() {
+	if (searchKeyword.value.trim().length > 0) {
+		store.addSearchHistory(searchKeyword.value.trim());
+	}
+	showSearchHistory.value = false;
+	refreshList();
+}
 
-			// 保存随机种子
-			if (response.meta.seed) {
-				randomSeed = response.meta.seed;
-			}
+// 历史记录搜索
+function onHistorySearch(keyword: string) {
+	searchKeyword.value = keyword;
+	showSearchHistory.value = false;
+	refreshList();
+}
 
-			// 检查是否最后一页
-			if (currentPage >= response.meta.last_page) {
-				finished.value = true;
-			} else {
-				currentPage++;
-			}
+// 跳转详情页
+function toDetail(item: any) {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		const id = obj?.getString("id");
+		if (id != null) {
+			router?.to(`/pages/wallhaven/detail/index?id=${id}`);
 		}
-	} catch (err: any) {
-		ui.showToast({
-			message: err.message || "加载失败"
-		});
-	} finally {
-		loading.value = false;
 	}
 }
 
-// 跳转到详情页
-function toDetail(item: UTSJSONObject) {
-	router.to(`/pages/wallhaven/detail/index?id=${item.getString("id") ?? ""}`);
+// 判断是否收藏
+function isFavorited(item: any): boolean {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		const id = obj?.getString("id");
+		if (id != null) {
+			return store.isFavorite(id);
+		}
+	}
+	return false;
 }
 
-// 跳转到在线收藏夹
-function toCollections() {
-	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/collections/index");
+// 处理收藏事件
+function onFavorite(item: any) {
+	const obj = item as UTSJSONObject | null;
+	if (obj == null) return;
+	
+	const id = obj?.getString("id");
+	
+	if (id != null) {
+		if (store.isFavorite(id)) {
+			store.removeFavorite(id);
+			ui.showToast({ message: '已取消收藏' });
+		} else {
+			// JSON.parse 在 UTS 中可能不支持泛型，使用 as 转换
+			const wallpaper = JSON.parse(JSON.stringify(item)) as Wallpaper | null;
+			if (wallpaper != null) {
+				store.addFavorite(wallpaper.id);
+				ui.showToast({ message: '已添加到收藏' });
+			}
+		}
+	}
 }
 
-// 跳转到本地收藏
-function toFavorites() {
-	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/favorites/index");
-}
-
-// 跳转到设置
-function toSettings() {
-	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/settings/index");
-}
-
-// 跳转到关于
-function toAbout() {
-	leftDrawerVisible.value = false;
-	router.to("/pages/wallhaven/about/index");
-}
-
-// 触底加载更多
-onReachBottom(() => {
-	loadData();
+// 下拉刷新
+onPullDownRefresh(() => {
+	// 重置分页
+	currentPage = 1;
+	randomSeed = "";
+	finished.value = false;
+	// 清空瀑布流
+	waterfallRef.value?.clear();
+	
+	loadData().then(() => {
+		uni.stopPullDownRefresh();
+	});
 });
 
 // 初始化
 onMounted(() => {
-	syncFilterFormFromStore();
 	refreshList();
 });
 </script>
-
-<style lang="scss" scoped>
-</style>

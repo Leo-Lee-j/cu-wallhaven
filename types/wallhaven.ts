@@ -9,16 +9,14 @@ export type WallpaperThumbs = {
 	small: string;
 };
 
+// 头像尺寸 (使用 Record 类型避免数字开头的键名导致 UTS 编译错误)
+export type WallpaperAvatarSizes = Record<string, string>;
+
 // 上传者信息
 export type WallpaperUploader = {
 	username: string;
 	group: string;
-	avatar: {
-		"200px": string;
-		"128px": string;
-		"32px": string;
-		"20px": string;
-	};
+	avatar: WallpaperAvatarSizes;
 };
 
 // 壁纸标签
@@ -56,13 +54,19 @@ export type Wallpaper = {
 	tags?: WallpaperTag[];
 };
 
+// 搜索查询对象
+export type SearchQuery = {
+	id: number;
+	tag: string;
+};
+
 // 搜索响应元数据
 export type SearchMeta = {
 	current_page: number;
 	last_page: number;
 	per_page: number;
 	total: number;
-	query: string | { id: number; tag: string } | null;
+	query: string | SearchQuery | null;
 	seed: string | null;
 };
 
@@ -93,18 +97,18 @@ export type CollectionsResponse = {
 
 // 搜索参数
 export type SearchParams = {
-	q?: string; // 搜索关键词
-	categories?: string; // 分类 111 (general/anime/people)
-	purity?: string; // 纯度 100 (sfw/sketchy/nsfw)
-	sorting?: "date_added" | "relevance" | "random" | "views" | "favorites" | "toplist";
-	order?: "desc" | "asc";
-	topRange?: "1d" | "3d" | "1w" | "1M" | "3M" | "6M" | "1y";
-	atleast?: string; // 最小分辨率
-	resolutions?: string; // 精确分辨率
-	ratios?: string; // 宽高比
-	colors?: string; // 颜色代码
-	page?: number;
-	seed?: string; // 随机种子
+	q?: string | null; // 搜索关键词
+	categories?: string | null; // 分类 111 (general/anime/people)
+	purity?: string | null; // 纯度 100 (sfw/sketchy/nsfw)
+	sorting?: "date_added" | "relevance" | "random" | "views" | "favorites" | "toplist" | null;
+	order?: "desc" | "asc" | null;
+	topRange?: "1d" | "3d" | "1w" | "1M" | "3M" | "6M" | "1y" | null;
+	atleast?: string | null; // 最小分辨率
+	resolutions?: string | null; // 精确分辨率
+	ratios?: string | null; // 宽高比
+	colors?: string | null; // 颜色代码
+	page?: number | null;
+	seed?: string | null; // 随机种子
 };
 
 // 筛选表单
@@ -114,6 +118,8 @@ export type FilterForm = {
 	sorting: string;
 	topRange: string;
 	ratios: string[];
+	wallpaperType: 'all' | 'pc' | 'mobile'; // 壁纸类型: 全部/PC/手机
+	colors: string[]; // 颜色代码数组
 };
 
 // Wallhaven Store 状态

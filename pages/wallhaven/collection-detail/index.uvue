@@ -1,0 +1,194 @@
+<template>
+	<cl-page 
+		:back-top="true" 
+		:lower-threshold="300" 
+		@scrolltolower="loadData"
+	>
+		<!-- 顶部导航栏 -->
+		<cl-topbar 
+			fixed 
+			safe-area-top
+			:pt="{
+				back: {
+					color: 'black'
+				}
+			}"
+		>
+			<view class="flex flex-row items-center justify-center p-3 w-full">
+				<!-- 收藏夹标题 -->
+				<view class="flex flex-col items-center">
+					<cl-text :pt="{ className: 'text-lg font-bold' }">{{ collectionName }}</cl-text>
+					<cl-text :pt="{ className: 'text-xs text-surface-400' }" v-if="totalCount >= 0">
+						{{ totalCount }} 张壁纸
+					</cl-text>
+				</view>
+			</view>
+		</cl-topbar>
+
+		<!-- 壁纸列表 -->
+		<view class="wallpaper-container p-2">
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+				<template #item="{ item }">
+					<wallpaper-item :item="item" @tap="toDetail(item)"></wallpaper-item>
+				</template>
+			</cl-waterfall>
+
+			<cl-loadmore :loading="loading" :finished="finished" safe-area-bottom></cl-loadmore>
+		</view>
+
+		<!-- 加载中状态 -->
+		<view
+			class="flex flex-col items-center justify-center h-[450px]"
+			v-if="wallpapers.length === 0 && loading"
+		>
+			<cl-loading></cl-loading>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">加载中...</cl-text>
+		</view>
+
+		<!-- 空状态 -->
+		<view
+			class="flex flex-col items-center justify-center h-[450px]"
+			v-if="wallpapers.length === 0 && !loading && error === ''"
+		>
+			<cl-icon name="image-line" :size="120" color="gray"></cl-icon>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">收藏夹是空的</cl-text>
+		</view>
+
+		<!-- 错误状态 -->
+		<view
+			class="flex flex-col items-center justify-center h-[450px]"
+			v-if="error"
+		>
+			<cl-icon name="error-warning-line" :size="120" color="gray"></cl-icon>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">加载失败</cl-text>
+			<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">{{ error }}</cl-text>
+			<cl-button
+				type="primary"
+				:pt="{ className: 'mt-4' }"
+				@tap="retry"
+			>重试</cl-button>
+		</view>
+	</cl-page>
+</template>
+
+<script lang="ts" setup>
+import { ref, computed, onMounted } from "vue";
+import { router, useStore } from "@/cool";
+import { useUi } from "@/uni_modules/cool-ui";
+import type { Wallpaper, SearchResponse } from "@/types/wallhaven";
+import WallpaperItem from "../components/wallpaper-item.uvue";
+
+const ui = useUi();
+const { wallhaven } = useStore();
+
+// URL参数
+const username = ref<string>("");
+const collectionId = ref<number>(0);
+const collectionName = ref<string>("未命名收藏夹");
+
+// 瀑布流引用
+const waterfallRef = ref<ClWaterfallComponentPublicInstance | null>(null);
+
+// 壁纸列表
+const wallpapers = ref<UTSJSONObject[]>([]);
+
+// 加载状态
+const loading = ref(false);
+const finished = ref(false);
+const error = ref("");
+
+// 当前页码
+let currentPageNum = 1;
+
+// 总数
+const totalCount = ref<number>(-1);
+
+// 加载数据
+async function loadData() {
+	if (loading.value || finished.value) return;
+
+	loading.value = true;
+	error.value = "";
+
+	try {
+		const response = await wallhaven.getCollectionWallpapers(
+			username.value,
+			collectionId.value,
+			currentPageNum
+		);
+
+		// 将响应转换为 UTSJSONObject
+		const responseObj = response as UTSJSONObject;
+		const newWallpapers = responseObj['data'] as UTSJSONObject[];
+
+		if (newWallpapers.length === 0) {
+			finished.value = true;
+		} else {
+			wallpapers.value.push(...newWallpapers);
+			// @ts-ignore
+			waterfallRef.value?.append(newWallpapers as UTSJSONObject[]);
+
+			// 更新总数
+			const meta = responseObj['meta'] as UTSJSONObject | null;
+			if (meta != null) {
+				const total = meta.getNumber('total');
+				if (total != null) {
+					totalCount.value = total;
+				}
+
+				// 检查是否最后一页
+				const lastPage = meta.getNumber('last_page');
+				if (lastPage != null && currentPageNum >= lastPage) {
+					finished.value = true;
+				} else {
+					currentPageNum++;
+				}
+			} else {
+				currentPageNum++;
+			}
+		}
+	} catch (err: any) {
+		error.value = err.message ?? "加载失败";
+		ui.showToast({
+			message: error.value
+		});
+	} finally {
+		loading.value = false;
+	}
+}
+
+// 重试
+function retry() {
+	currentPageNum = 1;
+	finished.value = false;
+	wallpapers.value = [];
+	waterfallRef.value?.clear();
+	loadData();
+}
+
+// 跳转到详情页
+function toDetail(item: UTSJSONObject) {
+	router.to(`/pages/wallhaven/detail/index?id=${item.getString("id") ?? ""}`);
+}
+
+// 返回
+function goBack() {
+	uni.navigateBack();
+}
+
+// 页面加载时获取参数
+
+// 页面加载时获取参数
+onLoad((options) => {
+	username.value = (options?.["username"] as string) ?? "";
+	collectionId.value = parseInt((options?.["id"] as string) ?? "0");
+	collectionName.value = decodeURIComponent((options?.["name"] as string) ?? "未命名收藏夹") ?? "未命名收藏夹";
+	
+	if (username.value === '' || collectionId.value === 0) {
+		error.value = "缺少必要参数";
+		return;
+	}
+	loadData();
+});
+</script>
+
