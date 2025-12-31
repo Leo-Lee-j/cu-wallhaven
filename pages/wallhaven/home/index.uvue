@@ -762,6 +762,17 @@ function resetFilter() {
 
 // 应用筛选
 function applyFilter() {
+	console.log('[筛选] ===== 应用筛选 =====');
+	console.log('[筛选] 当前筛选表单:', {
+		categories: filterForm.categories,
+		purity: filterForm.purity,
+		sorting: filterForm.sorting,
+		topRange: filterForm.topRange,
+		ratios: filterForm.ratios,
+		wallpaperType: filterForm.wallpaperType,
+		colors: filterForm.colors
+	});
+	
 	store.setFilterForm({
 		categories: [...filterForm.categories],
 		purity: [...filterForm.purity],
@@ -771,6 +782,8 @@ function applyFilter() {
 		wallpaperType: filterForm.wallpaperType,
 		colors: [...filterForm.colors]
 	});
+	
+	console.log('[筛选] 已保存到 store,开始刷新列表');
 	rightDrawerVisible.value = false;
 	refreshList();
 }

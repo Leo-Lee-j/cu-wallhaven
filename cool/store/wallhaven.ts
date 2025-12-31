@@ -285,13 +285,18 @@ export class WallhavenStore {
 		if (wallpaperType === 'pc') {
 			// PC壁纸 - 横屏比例
 			ratioList.push('16x9', '16x10', '21x9', '32x9', '4x3', '5x4');
+			console.log('[筛选] PC壁纸模式,添加横屏比例');
 		} else if (wallpaperType === 'mobile') {
 			// 手机壁纸 - 竖屏比例
 			ratioList.push('9x16', '10x16', '9x18', '9x19.5', '9x20');
+			console.log('[筛选] 手机壁纸模式,添加竖屏比例');
+		} else {
+			console.log('[筛选] 全部壁纸模式,不限制宽高比');
 		}
 		
 		// 添加自定义比例，去重
-		if (customRatios != null && Array.isArray(customRatios)) {
+		if (customRatios != null && Array.isArray(customRatios) && customRatios.length > 0) {
+			console.log('[筛选] 自定义比例:', customRatios);
 			for (const ratio of customRatios) {
 				if (!ratioList.includes(ratio)) {
 					ratioList.push(ratio);
@@ -299,13 +304,24 @@ export class WallhavenStore {
 			}
 		}
 		
-		return ratioList.join(',');
+		const result = ratioList.join(',');
+		console.log('[筛选] 最终宽高比参数:', result === '' ? '无限制' : result);
+		return result;
 	}
 
 	/**
 	 * 搜索壁纸
 	 */
 	async search(params: any = {}): Promise<any> {
+		// 打印当前筛选状态
+		console.log('[筛选] ===== 开始构建搜索参数 =====');
+		console.log('[筛选] 当前 wallpaperType:', this.filterForm.value?.wallpaperType);
+		console.log('[筛选] 当前 categories:', this.filterForm.value?.categories);
+		console.log('[筛选] 当前 purity:', this.filterForm.value?.purity);
+		console.log('[筛选] 当前 sorting:', this.filterForm.value?.sorting);
+		console.log('[筛选] 当前 ratios:', this.filterForm.value?.ratios);
+		console.log('[筛选] 当前 colors:', this.filterForm.value?.colors);
+		
 		const queryParts: string[] = [];
 		
 		// 将 params 转换为 UTSJSONObject 以访问属性
@@ -371,6 +387,8 @@ export class WallhavenStore {
 		}
 
 		const url = `${API_BASE}/search?${queryParts.join("&")}`;
+		console.log('[筛选] 最终请求 URL:', url);
+		console.log('[筛选] ===== 参数构建完成 =====');
 
 		return new Promise((resolve, reject) => {
 			uni.request({
