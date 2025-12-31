@@ -130,8 +130,7 @@
 				<view class="drawer-header px-5 pt-[100rpx] pb-6 flex flex-col items-center">
 					<cl-avatar
 						:size="140"
-						src=""
-						icon="user-line"
+						src="/static/wallhaven-logo.png"
 						:pt="{ className: 'border-4 border-white/20' }"
 					></cl-avatar>
 					<cl-text :pt="{ className: 'mt-4 text-white text-lg font-bold' }">
