@@ -34,12 +34,13 @@
 				mode="aspectFit"
 				class="w-full h-full"
 				@tap="toggleFullscreen"
+				@load="onImageLoad"
 				:show-menu-by-longpress="true"
 			></image>
 		</view>
 
 		<!-- 加载中 -->
-		<view class="wallpaper-container flex flex-col items-center justify-center" v-else>
+		<view class="wallpaper-container flex flex-col items-center justify-center !z-10" v-if="!imageLoaded">
 			<cl-loading :size="80" color="white"></cl-loading>
 			<cl-text :pt="{ className: 'text-white/70 mt-4' }">加载中...</cl-text>
 		</view>
@@ -156,6 +157,9 @@ const wallpaper = ref<UTSJSONObject | null>(null);
 // 壁纸ID
 const wallpaperId = ref("");
 
+// 图片是否加载完成
+const imageLoaded = ref(false);
+
 // 详情折叠状态
 const detailVisible = ref(false);
 
@@ -189,6 +193,11 @@ function toggleFavorite() {
 		wallhaven.addFavorite(wallpaperId.value);
 		ui.showToast({ message: "已收藏", icon: "heart-fill" });
 	}
+}
+
+// 图片加载完成
+function onImageLoad() {
+	imageLoaded.value = true;
 }
 
 // 定义下载错误类型
