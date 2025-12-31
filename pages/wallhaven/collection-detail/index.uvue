@@ -1,6 +1,5 @@
 <template>
 	<cl-page 
-		style="height: 100vh"
 		:back-top="true" 
 		:lower-threshold="300" 
 		@scrolltolower="loadData"

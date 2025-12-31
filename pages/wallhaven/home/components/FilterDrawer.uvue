@@ -1,0 +1,439 @@
+<template>
+	<cl-popup
+		:model-value="visible"
+		direction="right"
+		size="80%"
+		:show-header="false"
+		@update:model-value="onUpdateVisible"
+	>
+		<view class="flex flex-col h-full">
+			<view class="p-4 border-b border-surface-100 dark:!border-surface-700">
+				<cl-text :pt="{ className: 'text-lg font-bold' }">筛选</cl-text>
+			</view>
+
+			<scroll-view scroll-y class="flex-1">
+				<cl-form :pt="{ className: 'p-3' }">
+					<!-- 分类 -->
+					<cl-form-item label="分类">
+						<cl-row :gutter="16">
+							<cl-col :span="8">
+								<cl-checkbox
+									v-model="filterForm.categories"
+									label="General"
+									value="general"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.categories.includes('general'),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-sm' }
+									}"
+								></cl-checkbox>
+							</cl-col>
+							<cl-col :span="8">
+								<cl-checkbox
+									v-model="filterForm.categories"
+									label="Anime"
+									value="anime"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.categories.includes('anime'),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-sm' }
+									}"
+								></cl-checkbox>
+							</cl-col>
+							<cl-col :span="8">
+								<cl-checkbox
+									v-model="filterForm.categories"
+									label="People"
+									value="people"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.categories.includes('people'),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-sm' }
+									}"
+								></cl-checkbox>
+							</cl-col>
+						</cl-row>
+					</cl-form-item>
+
+					<!-- 内容分级 -->
+					<cl-form-item label="内容分级">
+						<cl-row :gutter="16">
+							<cl-col :span="8">
+								<cl-checkbox
+									v-model="filterForm.purity"
+									label="SFW"
+									value="sfw"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.purity.includes('sfw'),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-sm' }
+									}"
+								></cl-checkbox>
+							</cl-col>
+							<cl-col :span="8">
+								<cl-checkbox
+									v-model="filterForm.purity"
+									label="Sketchy"
+									value="sketchy"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.purity.includes('sketchy'),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-sm' }
+									}"
+								></cl-checkbox>
+							</cl-col>
+							<cl-col :span="8">
+								<cl-checkbox
+									v-model="filterForm.purity"
+									label="NSFW"
+									value="nsfw"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.purity.includes('nsfw'),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-sm' }
+									}"
+								></cl-checkbox>
+							</cl-col>
+						</cl-row>
+					</cl-form-item>
+
+					<!-- 排序方式 -->
+					<cl-form-item label="排序方式">
+						<cl-row :gutter="16">
+							<cl-col :span="6" v-for="item in sortingOptions" :key="item.value">
+								<cl-radio
+									v-model="filterForm.sorting"
+									:label="item.label"
+									:value="item.value"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.sorting == item.value,
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-xs' }
+									}"
+								></cl-radio>
+							</cl-col>
+						</cl-row>
+					</cl-form-item>
+
+					<!-- 热门时间范围 -->
+					<cl-form-item label="热门时间范围" v-if="filterForm.sorting === 'toplist'">
+						<cl-row :gutter="16">
+							<cl-col :span="6" v-for="item in topRangeOptions" :key="item.value">
+								<cl-radio
+									v-model="filterForm.topRange"
+									:label="item.label"
+									:value="item.value"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.topRange == item.value,
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-xs' }
+									}"
+								></cl-radio>
+							</cl-col>
+						</cl-row>
+					</cl-form-item>
+
+					<!-- 壁纸类型 -->
+					<cl-form-item label="壁纸类型">
+						<cl-row :gutter="16">
+							<cl-col :span="8">
+								<cl-radio
+									v-model="filterForm.wallpaperType"
+									label="全部"
+									value="all"
+									:show-icon="false"
+									:pt="{
+								className: parseClass([
+									'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+									[isDark, 'bg-surface-800', 'bg-surface-100'],
+									[
+										filterForm.wallpaperType == 'all',
+										`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+									]
+								]),
+								label: { className: 'text-sm' }
+							}"
+								></cl-radio>
+							</cl-col>
+							<cl-col :span="8">
+								<cl-radio
+									v-model="filterForm.wallpaperType"
+									label="PC壁纸"
+									value="pc"
+									:show-icon="false"
+									:pt="{
+								className: parseClass([
+									'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+									[isDark, 'bg-surface-800', 'bg-surface-100'],
+									[
+										filterForm.wallpaperType == 'pc',
+										`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+									]
+								]),
+								label: { className: 'text-sm' }
+							}"
+								></cl-radio>
+							</cl-col>
+							<cl-col :span="8">
+								<cl-radio
+									v-model="filterForm.wallpaperType"
+									label="手机壁纸"
+									value="mobile"
+									:show-icon="false"
+									:pt="{
+								className: parseClass([
+									'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+									[isDark, 'bg-surface-800', 'bg-surface-100'],
+									[
+										filterForm.wallpaperType == 'mobile',
+										`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+									]
+								]),
+								label: { className: 'text-sm' }
+							}"
+								></cl-radio>
+							</cl-col>
+						</cl-row>
+					</cl-form-item>
+
+					<!-- 颜色筛选 -->
+					<cl-form-item label="颜色筛选">
+						<cl-row :gutter="12">
+							<cl-col :span="4" v-for="color in colorOptions" :key="color.value">
+								<view
+									class="color-item mb-3 rounded-lg border-2 border-solid"
+									:class="[
+								filterForm.colors.includes(color.value) ? 'border-primary-500' : 'border-transparent'
+							]"
+									@tap="toggleColor(color.value)"
+								>
+									<view
+										class="color-box w-full h-10 rounded-md"
+										:style="`background-color: #${color.value}`"
+									></view>
+								</view>
+							</cl-col>
+						</cl-row>
+					</cl-form-item>
+
+					<!-- 宽高比 -->
+					<cl-form-item label="宽高比">
+						<cl-row :gutter="16">
+							<cl-col :span="6" v-for="item in ratioOptions" :key="item.value">
+								<cl-checkbox
+									v-model="filterForm.ratios"
+									:label="item.label"
+									:value="item.value"
+									:show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.ratios.includes(item.value),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-xs' }
+									}"
+								></cl-checkbox>
+							</cl-col>
+						</cl-row>
+					</cl-form-item>
+				</cl-form>
+			</scroll-view>
+
+			<!-- 底部按钮 -->
+			<view class="flex flex-row p-3 border-t border-surface-100 dark:!border-surface-700">
+				<cl-button
+					type="info"
+					text
+					:pt="{ className: 'flex-1 mr-2' }"
+					@tap="resetFilter"
+				>重置
+				</cl-button>
+				<cl-button
+					:pt="{ className: 'flex-1' }"
+					@tap="applyFilter"
+				>确定
+				</cl-button>
+			</view>
+
+			<cl-safe-area type="bottom"></cl-safe-area>
+		</view>
+	</cl-popup>
+</template>
+
+<script lang="ts" setup>
+import { ref, reactive, onMounted } from "vue";
+import { useStore, isDark, parseClass } from "@/cool";
+import type { FilterForm } from "@/types/wallhaven";
+import {
+	SORTING_OPTIONS,
+	TOP_RANGE_OPTIONS,
+	RATIO_OPTIONS,
+	COLOR_OPTIONS,
+	type OptionItem,
+	type ColorOption
+} from "@/constants/wallhaven";
+
+const { wallhaven } = useStore();
+const store = wallhaven;
+
+const props = defineProps({
+	visible: {
+		type: Boolean,
+		default: false
+	}
+});
+
+const emit = defineEmits(["update:visible", "confirm"]);
+
+// 筛选表单(本地副本)- 使用默认值初始化
+const filterForm = reactive<FilterForm>({
+	categories: ["general", "anime", "people"],
+	purity: ["sfw"],
+	sorting: "date_added",
+	topRange: "1M",
+	ratios: [] as string[],
+	wallpaperType: "all",
+	colors: [] as string[]
+});
+
+// 使用共享常量
+const sortingOptions = ref<OptionItem[]>(SORTING_OPTIONS);
+const topRangeOptions = ref<OptionItem[]>(TOP_RANGE_OPTIONS);
+const ratioOptions = ref<OptionItem[]>(RATIO_OPTIONS);
+const colorOptions = ref<ColorOption[]>(COLOR_OPTIONS);
+
+function onUpdateVisible(val: boolean) {
+	emit("update:visible", val);
+}
+
+// 切换颜色选择
+function toggleColor(colorValue: string) {
+	const index = filterForm.colors.indexOf(colorValue);
+	if (index >= 0) {
+		filterForm.colors.splice(index, 1);
+	} else {
+		filterForm.colors.push(colorValue);
+	}
+}
+
+// 重置筛选
+function resetFilter() {
+	filterForm.categories = ["general", "anime", "people"];
+	filterForm.purity = ["sfw"];
+	filterForm.sorting = "date_added";
+	filterForm.topRange = "1M";
+	filterForm.ratios = [];
+	filterForm.wallpaperType = "all";
+	filterForm.colors = [];
+}
+
+// 从 store 同步筛选表单数据
+function syncFilterFormFromStore() {
+	const storeForm = store.filterForm.value;
+	if (storeForm != null) {
+		if (storeForm.categories != null && Array.isArray(storeForm.categories)) {
+			filterForm.categories = [...storeForm.categories];
+		}
+		if (storeForm.purity != null && Array.isArray(storeForm.purity)) {
+			filterForm.purity = [...storeForm.purity];
+		}
+		if (storeForm.sorting != null) {
+			filterForm.sorting = storeForm.sorting;
+		}
+		if (storeForm.topRange != null) {
+			filterForm.topRange = storeForm.topRange;
+		}
+		if (storeForm.ratios != null && Array.isArray(storeForm.ratios)) {
+			filterForm.ratios = [...storeForm.ratios];
+		}
+		if (storeForm.wallpaperType != null) {
+			filterForm.wallpaperType = storeForm.wallpaperType;
+		}
+		if (storeForm.colors != null && Array.isArray(storeForm.colors)) {
+			filterForm.colors = [...storeForm.colors];
+		}
+	}
+}
+
+// 应用筛选
+function applyFilter() {
+	console.log('[筛选] ===== 应用筛选 =====');
+	
+	store.setFilterForm({
+		categories: [...filterForm.categories],
+		purity: [...filterForm.purity],
+		sorting: filterForm.sorting,
+		topRange: filterForm.topRange,
+		ratios: [...filterForm.ratios],
+		wallpaperType: filterForm.wallpaperType,
+		colors: [...filterForm.colors]
+	});
+	
+	emit("update:visible", false);
+	emit("confirm");
+}
+
+onMounted(() => {
+	syncFilterFormFromStore();
+});
+</script>
