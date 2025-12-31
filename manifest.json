@@ -2,7 +2,7 @@
 	"name": "cu-wallhaven",
 	"appid": "__UNI__6BFD0E5",
 	"description": "基于 Wallhaven API 的高颜值壁纸应用",
-	"versionName": "1.0.0",
+	"versionName": "0.0.1",
 	"versionCode": "100",
 	"uni-app-x": {},
 	"quickapp": {},

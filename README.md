@@ -6,7 +6,7 @@
 
 _探索和收藏世界上最精美的壁纸 - 一次开发，全端运行_
 
-[![GitHub license](https://img.shields.io/badge/license-MIT-green?style=flat-square)](./LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-CC%20BY--NC%204.0-green?style=flat-square)](./LICENSE)
 [![uni-app x](https://img.shields.io/badge/uni--app%20x-blue?style=flat-square)](https://uniapp.dcloud.io/)
 [![Cool Unix](https://img.shields.io/badge/Cool%20Unix-8.0-orange?style=flat-square)](https://unix.cool-js.com/)
 
@@ -21,7 +21,7 @@ _探索和收藏世界上最精美的壁纸 - 一次开发，全端运行_
 - ❤️ **本地收藏** - 无需登录即可收藏喜爱的壁纸
 - 📥 **一键下载** - 支持将壁纸保存到本地相册
 - 🌓 **深色模式** - 完美适配明/暗主题切换
-- 📱 **跨端运行** - 支持 Android、iOS、H5、鸿蒙等多平台
+- 📱 **跨端运行** - 支持 Android、iOS(开发中)、H5、鸿蒙(开发中)等多平台
 
 ## 📱 应用截图
 
@@ -112,7 +112,7 @@ cu-wallhaven/
 │   └── wallhaven.ts        # Wallhaven API 类型定义
 ├── config/                 # 环境配置
 ├── cool/                   # Cool Unix 核心库
-└── uni_modules/            # uni-app 插件
+├── uni_modules/            # uni-app 插件
 ```
 
 ## 🔗 相关链接
@@ -124,12 +124,10 @@ cu-wallhaven/
 
 ## 📄 开源协议
 
-本项目基于 [MIT 协议](LICENSE) 开源，您可以自由使用、修改和分发。
+本项目基于 [CC BY-NC 4.0 协议](LICENSE) 开源，允许非商业用途的自由使用、修改和分发。
 
 ## 🙏 致谢
 
 - [Wallhaven](https://wallhaven.cc/) 提供优质壁纸资源
 - [Cool Unix](https://github.com/cool-team-official/cool-unix) 提供强大的开发脚手架
-</div>
 </CodeContent>
-<parameter name="EmptyFile">false
