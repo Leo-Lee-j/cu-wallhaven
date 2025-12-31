@@ -86,7 +86,7 @@ const collectionName = ref<string>("未命名收藏夹");
 const waterfallRef = ref<ClWaterfallComponentPublicInstance | null>(null);
 
 // 壁纸列表
-const wallpapers = ref<Wallpaper[]>([]);
+const wallpapers = ref<UTSJSONObject[]>([]);
 
 // 加载状态
 const loading = ref(false);
@@ -111,9 +111,11 @@ async function loadData() {
 			username.value,
 			collectionId.value,
 			currentPageNum
-		) as SearchResponse;
+		);
 
-		const newWallpapers = response.data;
+		// 将响应转换为 UTSJSONObject
+		const responseObj = response as UTSJSONObject;
+		const newWallpapers = responseObj['data'] as UTSJSONObject[];
 
 		if (newWallpapers.length === 0) {
 			finished.value = true;
@@ -123,13 +125,20 @@ async function loadData() {
 			waterfallRef.value?.append(newWallpapers as UTSJSONObject[]);
 
 			// 更新总数
-			if (response.meta != null && response.meta.total !== null) {
-				totalCount.value = response.meta.total;
-			}
+			const meta = responseObj['meta'] as UTSJSONObject | null;
+			if (meta != null) {
+				const total = meta.getNumber('total');
+				if (total != null) {
+					totalCount.value = total;
+				}
 
-			// 检查是否最后一页
-			if (response.meta != null && currentPageNum >= response.meta.last_page) {
-				finished.value = true;
+				// 检查是否最后一页
+				const lastPage = meta.getNumber('last_page');
+				if (lastPage != null && currentPageNum >= lastPage) {
+					finished.value = true;
+				} else {
+					currentPageNum++;
+				}
 			} else {
 				currentPageNum++;
 			}
