@@ -33,7 +33,7 @@
 					></cl-input>
 				</view>
 
-				<!-- 右侧按钮：搜索模式下显示取消，正常模式显示筛选 -->
+				<!-- 右侧按钮：搜索模式下显示取消，正常模式显示刷新和筛选 -->
 				<view v-if="showSearchHistory">
 					<cl-text
 						:pt="{ className: 'text-primary-500' }"
@@ -41,12 +41,21 @@
 					>取消
 					</cl-text>
 				</view>
-				<view
-					v-else
-					class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
-					@tap="openRightDrawer"
-				>
-					<cl-icon name="filter-line" :size="40"></cl-icon>
+				<view v-else class="flex flex-row items-center">
+					<!-- 刷新按钮 -->
+					<view
+						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700 mr-2"
+						@tap="onRefreshClick"
+					>
+						<cl-icon name="refresh-line" :size="40"></cl-icon>
+					</view>
+					<!-- 筛选按钮 -->
+					<view
+						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
+						@tap="openRightDrawer"
+					>
+						<cl-icon name="filter-line" :size="40"></cl-icon>
+					</view>
 				</view>
 			</view>
 		</cl-topbar>
@@ -738,6 +747,11 @@ function openRightDrawer() {
 	rightDrawerVisible.value = true;
 }
 
+// 点击刷新按钮
+function onRefreshClick() {
+	refreshList();
+}
+
 // 搜索框聚焦 - 进入搜索模式
 function onSearchFocus() {
 	showSearchHistory.value = true;
@@ -877,6 +891,23 @@ function toAbout() {
 // 触底加载更多
 onReachBottom(() => {
 	loadData();
+});
+
+// 下拉刷新
+onPullDownRefresh(() => {
+	// 重置分页
+	currentPage = 1;
+	randomSeed = "";
+	finished.value = false;
+	
+	// 清空数据
+	waterfallRef.value?.clear();
+	
+	// 重新加载
+	loadData();
+	
+	// 停止下拉刷新动画
+	uni.stopPullDownRefresh();
 });
 
 // 初始化
