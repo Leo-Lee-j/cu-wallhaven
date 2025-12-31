@@ -99,7 +99,9 @@
 				</template>
 			</cl-waterfall>
 
-			<cl-loadmore :loading="loading" :finished="finished" safe-area-bottom></cl-loadmore>
+			<view class="h-12 flex flex-row items-center justify-center w-full">
+				<cl-loadmore :loading="loading" :finished="finished"></cl-loadmore>
+			</view>
 		</view>
 
 		<!-- 左侧抽屉菜单 -->

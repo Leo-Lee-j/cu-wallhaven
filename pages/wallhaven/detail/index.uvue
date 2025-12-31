@@ -39,12 +39,6 @@
 			></image>
 		</view>
 
-		<!-- 加载中 -->
-		<view class="wallpaper-container flex flex-col items-center justify-center !z-10" v-if="!imageLoaded">
-			<cl-loading :size="80" color="white"></cl-loading>
-			<cl-text :pt="{ className: 'text-white/70 mt-4' }">加载中...</cl-text>
-		</view>
-
 		<!-- 底部操作栏 - 毛玻璃效果 -->
 		<view class="detail-footer" v-if="!isFullscreen">
 			<!-- 折叠详情区域（可滚动） -->

@@ -1,6 +1,6 @@
 <template>
 	<view
-		:animation="animationData"
+		ref="el"
 		class="wallpaper-item bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3 opacity-0"
 		@tap="click"
 	>
@@ -39,8 +39,11 @@ const props = defineProps({
 
 const emit = defineEmits(["tap"]);
 
-// 动画数据
-const animationData = ref<any>(null);
+// 元素引用
+const el = ref<UniElement | null>(null);
+
+// 动画引擎
+let animation: AnimationEngine | null = null;
 
 // 点击事件
 function click() {
@@ -79,24 +82,27 @@ function getFavorites(item: any): string {
 }
 
 onMounted(() => {
-	// 创建动画实例
-	const animation = uni.createAnimation({
-		duration: 400,
-		timingFunction: 'ease-out',
-		delay: 0
-	});
+	// 获取当前组件实例的根元素
+	const instance = getCurrentInstance();
+	if (instance != null) {
+		const element = el.value;
+		if (element != null) {
+			// 初始化动画：从透明度0、缩放0.9 开始
+			element.style.setProperty("opacity", "0");
+			element.style.setProperty("transform", "scale(0.9)");
 
-	// 初始状态：透明度0，缩放0.9
-	// 注意：uni.createAnimation 需要先定义动画步骤，然后导出数据
-	// 但这里我们需要从一个状态过渡到另一个状态，通常是在 mounted 后设置新状态
-	
-	// 先设置初始样式（在 template 中已有 opacity-0）
-	
-	// 下一帧执行动画
-	setTimeout(() => {
-		animation.opacity(1).scale(1).step();
-		animationData.value = animation.export();
-	}, 100);
+			// 创建动画引擎
+			animation = new AnimationEngine(element, {
+				duration: 400, // 动画时长 400ms
+				timingFunction: 'easeOut', // 减速缓动
+			});
+
+			// 添加动画属性：透明度 0 -> 1，缩放 0.9 -> 1
+			animation?.opacity("0", "1")
+				?.scale("0.9", "1")
+				?.play(); // 开始动画
+		}
+	}
 });
 </script>
 
