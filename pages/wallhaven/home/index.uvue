@@ -95,28 +95,7 @@
 		<view v-show="!showSearchHistory" class="wallpaper-container p-2">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
 				<template #item="{ item }">
-					<view
-						class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3"
-						@tap="toDetail(item)"
-					>
-						<image
-							:src="getThumbnail(item)"
-							mode="widthFix"
-							class="w-full"
-							:lazy-load="true"
-						></image>
-						<view class="p-2 flex flex-row items-center justify-between">
-							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ getResolution(item) }}
-							</cl-text>
-							<view class="flex flex-row items-center">
-								<cl-icon name="heart-line" :size="28" color="gray"></cl-icon>
-								<cl-text :pt="{ className: 'text-xs text-surface-400 ml-1' }">
-									{{ getFavorites(item) }}
-								</cl-text>
-							</view>
-						</view>
-					</view>
+					<wallpaper-item :item="item" @tap="toDetail(item)"></wallpaper-item>
 				</template>
 			</cl-waterfall>
 
@@ -528,6 +507,7 @@ import { ref, reactive, computed, onMounted } from "vue";
 import { router, useStore, isDark, parseClass } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
 import type { Wallpaper, FilterForm, SearchParams } from "@/types/wallhaven";
+import WallpaperItem from "../components/wallpaper-item.uvue";
 
 type OptionItem = {
 	label: string;

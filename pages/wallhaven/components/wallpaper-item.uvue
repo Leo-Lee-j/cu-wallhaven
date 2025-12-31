@@ -1,0 +1,121 @@
+<template>
+	<view
+		ref="el"
+		class="wallpaper-item bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3 opacity-0"
+		@tap="click"
+	>
+		<image
+			:src="getThumbnail(item)"
+			mode="widthFix"
+			class="w-full"
+			:lazy-load="true"
+		></image>
+
+		<view class="p-2 flex flex-row items-center justify-between">
+			<cl-tag size="small" type="info" :plain="true">
+				{{ getResolution(item) }}
+			</cl-tag>
+
+			<view class="flex flex-row items-center">
+				<cl-icon name="heart-line" :size="28" color="gray"></cl-icon>
+				<cl-text :pt="{ className: 'text-xs text-surface-400 ml-1' }">
+					{{ getFavorites(item) }}
+				</cl-text>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script lang="ts" setup>
+import { ref, onMounted, getCurrentInstance } from "vue";
+import { AnimationEngine } from "@/cool/animation";
+
+const props = defineProps({
+	item: {
+		type: Object,
+		default: () => ({})
+	}
+});
+
+const emit = defineEmits(["tap"]);
+
+// 元素引用
+const el = ref<UniElement | null>(null);
+
+// 动画引擎
+let animation: AnimationEngine | null = null;
+
+// 点击事件
+function click() {
+	emit("tap", props.item);
+}
+
+// 辅助函数:获取缩略图 URL
+function getThumbnail(item: any): string {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		const thumbs = obj['thumbs'] as UTSJSONObject | null;
+		if (thumbs != null) {
+			return thumbs.getString('original') ?? "";
+		}
+	}
+	return "";
+}
+
+// 辅助函数:获取分辨率
+function getResolution(item: any): string {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		return obj.getString('resolution') ?? "";
+	}
+	return "";
+}
+
+// 辅助函数:获取收藏数
+function getFavorites(item: any): string {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		const num = obj.getNumber('favorites');
+		return num != null ? num.toString() : "0";
+	}
+	return "0";
+}
+
+onMounted(() => {
+	// 获取当前组件实例的根元素
+	const instance = getCurrentInstance();
+	if (instance != null) {
+		const element = el.value;
+		if (element != null) {
+			// 初始化动画：从透明度0、缩放0.9 开始
+			element.style.setProperty("opacity", "0");
+			element.style.setProperty("transform", "scale(0.9)");
+
+			// 创建动画引擎
+			animation = new AnimationEngine(element, {
+				duration: 400, // 动画时长 400ms
+				timingFunction: 'easeOut', // 减速缓动
+				start: () => {
+					// 动画开始
+				},
+				complete: () => {
+					// 动画结束
+				}
+			});
+
+			// 添加动画属性：透明度 0 -> 1，缩放 0.9 -> 1
+			animation?.opacity("0", "1")
+				?.scale("0.9", "1")
+				?.play(); // 开始动画
+		}
+	}
+});
+</script>
+
+<style scoped>
+.wallpaper-item {
+	/* 初始状态隐藏，由动画引擎接管 */
+	opacity: 0;
+	transform: scale(0.9);
+}
+</style>
