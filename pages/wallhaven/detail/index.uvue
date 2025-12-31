@@ -1,5 +1,5 @@
 <template>
-	<cl-page>
+	<cl-page background-color="#000">
 		<!-- 顶部导航栏 -->
 		<cl-topbar
 			fixed

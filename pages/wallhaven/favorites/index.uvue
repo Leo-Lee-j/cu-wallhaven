@@ -10,31 +10,12 @@
 		<view class="p-2" v-else-if="favorites.length > 0">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
 				<template #item="{ item }">
-					<view
-						class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3 relative"
+					<wallpaper-item
+						:item="item"
+						:show-delete="true"
 						@tap="toDetail(item)"
-					>
-						<image
-							:src="getThumbnail(item)"
-							mode="widthFix"
-							class="w-full"
-							:lazy-load="true"
-						></image>
-
-						<!-- 取消收藏按钮 -->
-						<view
-							class="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center"
-							@tap.stop="removeFavorite(item)"
-						>
-							<cl-icon name="heart-fill" :size="28" color="#ef4444"></cl-icon>
-						</view>
-
-						<view class="p-2 flex flex-row items-center justify-between">
-							<cl-text :pt="{ className: 'text-xs text-surface-400' }">
-								{{ getResolution(item) }}
-							</cl-text>
-						</view>
-					</view>
+						@delete="removeFavorite(item)"
+					></wallpaper-item>
 				</template>
 			</cl-waterfall>
 
@@ -54,6 +35,7 @@
 import { ref, onMounted, nextTick } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import WallpaperItem from "../components/wallpaper-item.uvue";
 
 const ui = useUi();
 const { wallhaven } = useStore();
@@ -67,26 +49,6 @@ const favorites = ref<UTSJSONObject[]>([]);
 // 加载状态
 const loading = ref(false);
 
-// 辅助函数:获取缩略图 URL
-function getThumbnail(item: any): string {
-    const obj = item as UTSJSONObject | null;
-    if (obj != null) {
-        const thumbs = obj['thumbs'] as UTSJSONObject | null;
-        if (thumbs != null) {
-            return thumbs.getString('small') ?? "";
-        }
-    }
-    return "";
-}
-
-// 辅助函数:获取分辨率
-function getResolution(item: any): string {
-    const obj = item as UTSJSONObject | null;
-    if (obj != null) {
-        return obj.getString('resolution') ?? "";
-    }
-    return "";
-}
 
 // 加载收藏的壁纸详情
 async function loadFavorites() {

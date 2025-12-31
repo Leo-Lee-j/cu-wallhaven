@@ -23,6 +23,15 @@
 				</cl-text>
 			</view>
 		</view>
+
+		<!-- 删除按钮 -->
+		<view
+			v-if="showDelete"
+			class="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center z-10"
+			@tap.stop="onDelete"
+		>
+			<cl-icon name="heart-fill" :size="28" color="#ef4444"></cl-icon>
+		</view>
 	</view>
 </template>
 
@@ -34,10 +43,14 @@ const props = defineProps({
 	item: {
 		type: Object,
 		default: () => ({})
+	},
+	showDelete: {
+		type: Boolean,
+		default: false
 	}
 });
 
-const emit = defineEmits(["tap"]);
+const emit = defineEmits(["tap", "delete"]);
 
 // 元素引用
 const el = ref<UniElement | null>(null);
@@ -48,6 +61,11 @@ let animation: AnimationEngine | null = null;
 // 点击事件
 function click() {
 	emit("tap", props.item);
+}
+
+// 删除事件
+function onDelete() {
+	emit("delete", props.item);
 }
 
 // 辅助函数:获取缩略图 URL
