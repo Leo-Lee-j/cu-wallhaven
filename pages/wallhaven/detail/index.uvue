@@ -191,11 +191,6 @@ function toggleFavorite() {
 	}
 }
 
-// 定义下载成功类型
-type DownloadFileSuccess = {
-	tempFilePath: string
-}
-
 // 定义下载错误类型
 type DownloadError = {
 	errMsg: string
@@ -209,10 +204,13 @@ async function downloadWallpaper() {
 
 	try {
 		// 下载图片
-		const downloadResult = await new Promise<DownloadFileSuccess>((resolve, reject) => {
+		const tempFilePath = await new Promise<string>((resolve, reject) => {
 			uni.downloadFile({
 				url: wallpaper.value?.getString('path') ?? '',
-				success: (res) => resolve(res as DownloadFileSuccess),
+				success: (res) => {
+					// 直接访问res对象的属性，无需类型转换
+					resolve(res.tempFilePath);
+				},
 				fail: (err) => reject(err)
 			});
 		});
@@ -220,7 +218,7 @@ async function downloadWallpaper() {
 		// 保存到相册
 		await new Promise<void>((resolve, reject) => {
 			uni.saveImageToPhotosAlbum({
-				filePath: downloadResult.tempFilePath,
+				filePath: tempFilePath,
 				success: () => resolve(),
 				fail: reject
 			});
