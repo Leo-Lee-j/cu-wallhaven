@@ -1,9 +1,8 @@
 <template>
 	<cl-page 
-		:scroll-top="true"
-		@touchstart="onTouchStart"
-		@touchmove="onTouchMove"
-		@touchend="onTouchEnd"
+		:back-top="true"
+		:lower-threshold="300"
+		@scrolltolower="loadData"
 	>
 		<!-- 顶部导航栏 -->
 		<cl-topbar
@@ -937,11 +936,6 @@ function toAbout() {
 	leftDrawerVisible.value = false;
 	router?.to("/pages/wallhaven/about/index");
 }
-
-// 触底加载更多
-onReachBottom(() => {
-	loadData();
-});
 
 // 下拉刷新
 onPullDownRefresh(() => {

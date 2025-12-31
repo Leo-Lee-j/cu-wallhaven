@@ -1,5 +1,5 @@
 <template>
-	<cl-page>
+	<cl-page style="height: 100vh" :back-top="true">
 		<!-- 加载中状态 -->
 		<view class="flex flex-col items-center justify-center h-[450px]" v-if="loading && favorites.length === 0">
 			<cl-loading :size="80"></cl-loading>

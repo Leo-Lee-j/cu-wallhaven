@@ -1,5 +1,10 @@
 <template>
-	<cl-page>
+	<cl-page 
+		style="height: 100vh"
+		:back-top="true" 
+		:lower-threshold="300" 
+		@scrolltolower="loadData"
+	>
 		<!-- 顶部导航栏 -->
 		<cl-topbar 
 			fixed 
@@ -172,10 +177,7 @@ function goBack() {
 	uni.navigateBack();
 }
 
-// 触底加载更多
-onReachBottom(() => {
-	loadData();
-});
+// 页面加载时获取参数
 
 // 页面加载时获取参数
 onLoad((options) => {
