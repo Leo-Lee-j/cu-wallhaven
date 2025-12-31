@@ -1,5 +1,10 @@
 <template>
-	<cl-page :scroll-top="true">
+	<cl-page 
+		:scroll-top="true"
+		@touchstart="onTouchStart"
+		@touchmove="onTouchMove"
+		@touchend="onTouchEnd"
+	>
 		<!-- 顶部导航栏 -->
 		<cl-topbar
 			fixed
@@ -573,6 +578,20 @@ const filterForm = reactive<FilterForm>({
 	colors: [] as string[]
 });
 
+// ========== 手势相关状态 ==========
+// 触摸起始位置
+const touchStartX = ref(0);
+const touchStartY = ref(0);
+// 触摸结束位置
+const touchEndX = ref(0);
+const touchEndY = ref(0);
+
+// 手势参数配置
+const MIN_SWIPE_DISTANCE = 50;  // 最小滑动距离(像素)
+const EDGE_THRESHOLD = 50;      // 边缘触发区域宽度(像素)
+const MAX_VERTICAL_OFFSET = 100; // 最大垂直偏移(像素)
+
+
 // 从 store 同步筛选表单数据
 function syncFilterFormFromStore() {
 	const storeForm = store.filterForm.value;
@@ -695,6 +714,49 @@ function openLeftDrawer() {
 function openRightDrawer() {
 	rightDrawerVisible.value = true;
 }
+
+// ========== 手势处理函数 ==========
+// 触摸开始
+function onTouchStart(e: TouchEvent) {
+	const touch = e.touches[0];
+	touchStartX.value = touch.clientX;
+	touchStartY.value = touch.clientY;
+}
+
+// 触摸移动
+function onTouchMove(e: TouchEvent) {
+	const touch = e.touches[0];
+	touchEndX.value = touch.clientX;
+	touchEndY.value = touch.clientY;
+}
+
+// 触摸结束 - 检测滑动手势
+function onTouchEnd() {
+	const deltaX = touchEndX.value - touchStartX.value;
+	const deltaY = touchEndY.value - touchStartY.value;
+	
+	// 垂直偏移太大,不是横向滑动
+	if (Math.abs(deltaY) > MAX_VERTICAL_OFFSET) {
+		return;
+	}
+	
+	// 从左向右滑动 - 打开菜单抽屉
+	if (deltaX > MIN_SWIPE_DISTANCE && touchStartX.value < EDGE_THRESHOLD) {
+		console.log('[手势] 检测到从左向右滑动,打开菜单');
+		openLeftDrawer();
+		return;
+	}
+	
+	// 从右向左滑动 - 打开筛选抽屉
+	const screenWidth = uni.getSystemInfoSync().windowWidth;
+	if (deltaX < -MIN_SWIPE_DISTANCE && touchStartX.value > screenWidth - EDGE_THRESHOLD) {
+		console.log('[手势] 检测到从右向左滑动,打开筛选');
+		openRightDrawer();
+		return;
+	}
+}
+
+
 
 // 点击刷新按钮
 function onRefreshClick() {
