@@ -102,7 +102,7 @@ export class WallhavenStore {
 			}
 		}
 		
-		// 处理 filterForm - 如果是字符串则解析,否则直接使用
+		//处理 filterForm - 如果是字符串则解析,否则直接使用
 		if (filterForm != null) {
 			if (typeof filterForm === 'string') {
 				// 检查字符串是否非空
@@ -110,15 +110,31 @@ export class WallhavenStore {
 					try {
 						const parsed = JSON.parse(filterForm);
 						if (parsed != null && typeof parsed === 'object') {
-							this.filterForm.value = parsed as FilterForm;
+							// 手动构建 FilterForm 对象 - 逐个属性赋值
+							const obj = parsed as UTSJSONObject;
+							this.filterForm.value.categories = obj['categories'] as string[] ?? ["general", "anime", "people"];
+							this.filterForm.value.purity = obj['purity'] as string[] ?? ["sfw"];
+							this.filterForm.value.sorting = obj['sorting'] as string ?? "date_added";
+							this.filterForm.value.topRange = obj['topRange'] as string ?? "1M";
+							this.filterForm.value.ratios = obj['ratios'] as string[] ?? [];
+							this.filterForm.value.wallpaperType = (obj['wallpaperType'] as 'all' | 'pc' | 'mobile') ?? 'all';
+							this.filterForm.value.colors = obj['colors'] as string[] ?? [];
 						}
 					} catch (err) {
 						console.error("解析 filterForm 失败:", err);
 					}
 				}
 			} else if (typeof filterForm === 'object') {
-				this.filterForm.value = filterForm as FilterForm;
-			}
+			// 手动构建 FilterForm 对象 - 逐个属性赋值
+			const obj = filterForm as UTSJSONObject;
+			this.filterForm.value.categories = obj['categories'] as string[] ?? ["general", "anime", "people"];
+			this.filterForm.value.purity = obj['purity'] as string[] ?? ["sfw"];
+			this.filterForm.value.sorting = obj['sorting'] as string ?? "date_added";
+			this.filterForm.value.topRange = obj['topRange'] as string ?? "1M";
+			this.filterForm.value.ratios = obj['ratios'] as string[] ?? [];
+			this.filterForm.value.wallpaperType = (obj['wallpaperType'] as 'all' | 'pc' | 'mobile') ?? 'all';
+			this.filterForm.value.colors = obj['colors'] as string[] ?? [];
+		}
 		}
 	}
 

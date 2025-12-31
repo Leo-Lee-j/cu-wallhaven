@@ -30,7 +30,7 @@
 		<!-- 壁纸显示区域 -->
 		<view class="wallpaper-container" v-if="wallpaper">
 			<image
-				:src="wallpaper!.path"
+				:src="wallpaper?.getString('path') ?? ''"
 				mode="aspectFit"
 				class="w-full h-full"
 				@tap="toggleFullscreen"
@@ -56,56 +56,56 @@
 				<view class="px-4 pt-4">
 					<cl-list>
 						<cl-list-item label="分辨率">
-							<cl-text>{{ wallpaper!.resolution }}</cl-text>
+							<cl-text>{{ wallpaper?.getString('resolution') ?? '' }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="分类">
-							<cl-tag size="small">{{ getCategoryLabel(wallpaper!.category) }}</cl-tag>
+							<cl-tag size="small">{{ getCategoryLabel(wallpaper?.getString('category') ?? '') }}</cl-tag>
 						</cl-list-item>
 						<cl-list-item label="内容分级">
 							<cl-tag
 								size="small"
-								:type="getPurityType(wallpaper!.purity)"
-							>{{ getPurityLabel(wallpaper!.purity) }}</cl-tag>
+								:type="getPurityType(wallpaper?.getString('purity') ?? '')"
+							>{{ getPurityLabel(wallpaper?.getString('purity') ?? '') }}</cl-tag>
 						</cl-list-item>
 						<cl-list-item label="浏览量">
-							<cl-text>{{ wallpaper!.views }}</cl-text>
+							<cl-text>{{ wallpaper?.getNumber('views') ?? 0 }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="收藏数">
-							<cl-text>{{ wallpaper!.favorites }}</cl-text>
+							<cl-text>{{ wallpaper?.getNumber('favorites') ?? 0 }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="文件大小">
-							<cl-text>{{ formatFileSize(wallpaper!.file_size) }}</cl-text>
+							<cl-text>{{ formatFileSize(wallpaper?.getNumber('file_size') ?? 0) }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="文件类型">
-							<cl-text>{{ wallpaper!.file_type }}</cl-text>
+							<cl-text>{{ wallpaper?.getString('file_type') ?? '' }}</cl-text>
 						</cl-list-item>
-						<cl-list-item v-if="wallpaper!.uploader" label="上传者">
-							<cl-text>{{ wallpaper!.uploader!.username }}</cl-text>
+						<cl-list-item v-if="wallpaper?.['uploader']" label="上传者">
+							<cl-text>{{ (wallpaper?.['uploader'] as UTSJSONObject)?.getString('username') ?? '' }}</cl-text>
 						</cl-list-item>
 						<cl-list-item label="上传时间">
-							<cl-text>{{ wallpaper!.created_at }}</cl-text>
+							<cl-text>{{ wallpaper?.getString('created_at') ?? '' }}</cl-text>
 						</cl-list-item>
 					</cl-list>
 
 					<!-- 标签 -->
-					<view class="mt-3" v-if="wallpaper!.tags != null && wallpaper!.tags!.length > 0">
+					<view class="mt-3" v-if="wallpaper?.['tags'] != null && ((wallpaper?.['tags'] as any[])?.length ?? 0) > 0">
 						<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">标签</cl-text>
 						<view class="flex flex-row flex-wrap">
 							<cl-tag
-								v-for="tag in wallpaper!.tags"
-								:key="tag.id"
+								v-for="tag in (wallpaper?.['tags'] as any[])"
+								:key="(tag as UTSJSONObject).getNumber('id') ?? 0"
 								size="small"
 								:pt="{ className: 'mr-2 mb-2' }"
-							>{{ tag.name }}</cl-tag>
+							>{{ (tag as UTSJSONObject).getString('name') ?? '' }}</cl-tag>
 						</view>
 					</view>
 
 					<!-- 颜色 -->
-					<view class="mt-3 pb-2" v-if="wallpaper!.colors != null && wallpaper!.colors!.length > 0">
+					<view class="mt-3 pb-2" v-if="wallpaper?.['colors'] != null && ((wallpaper?.['colors'] as string[])?.length ?? 0) > 0">
 						<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">主要颜色</cl-text>
 						<view class="flex flex-row flex-wrap">
 							<view
-								v-for="(color, index) in wallpaper!.colors"
+								v-for="(color, index) in (wallpaper?.['colors'] as string[])"
 								:key="index"
 								class="w-8 h-8 rounded-lg mr-2 mb-2 border border-white/20"
 								:style="{ backgroundColor: color }"
@@ -151,7 +151,7 @@ const ui = useUi();
 const { wallhaven } = useStore();
 
 // 壁纸数据
-const wallpaper = ref<Wallpaper | null>(null);
+const wallpaper = ref<UTSJSONObject | null>(null);
 
 // 壁纸ID
 const wallpaperId = ref("");
@@ -211,7 +211,7 @@ async function downloadWallpaper() {
 		// 下载图片
 		const downloadResult = await new Promise<DownloadFileSuccess>((resolve, reject) => {
 			uni.downloadFile({
-				url: wallpaper.value!.path,
+				url: wallpaper.value?.getString('path') ?? '',
 				success: (res) => resolve(res as DownloadFileSuccess),
 				fail: (err) => reject(err)
 			});
@@ -292,7 +292,8 @@ function formatFileSize(bytes: number): string {
 // 加载壁纸详情
 async function loadWallpaper() {
 	try {
-		wallpaper.value = await wallhaven.getWallpaper(wallpaperId.value);
+		const result = await wallhaven.getWallpaper(wallpaperId.value);
+		wallpaper.value = result as UTSJSONObject;
 	} catch (err: any) {
 		ui.showToast({
 			message: err.message ?? "加载失败"
@@ -300,16 +301,12 @@ async function loadWallpaper() {
 	}
 }
 
-// 定义页面参数类型
-type PageOptions = {
-	id?: string
-}
-
 // 页面加载
-onLoad((options: any) => {
-	const opt = options as PageOptions
-	if (opt.id != null) {
-		wallpaperId.value = opt.id!;
+onLoad((options?: UTSJSONObject) => {
+	if (options == null) return;
+	const id = options?.["id"] as string | null;
+	if (id != null && id !== '') {
+		wallpaperId.value = id;
 		loadWallpaper();
 	}
 });
