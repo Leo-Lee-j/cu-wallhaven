@@ -308,12 +308,9 @@ function onFavorite(item: any) {
 			store.removeFavorite(id);
 			ui.showToast({ message: '已取消收藏' });
 		} else {
-			// JSON.parse 在 UTS 中可能不支持泛型，使用 as 转换
-			const wallpaper = JSON.parse(JSON.stringify(item)) as Wallpaper | null;
-			if (wallpaper != null) {
-				store.addFavorite(wallpaper.id);
-				ui.showToast({ message: '已添加到收藏' });
-			}
+			// 直接使用从 UTSJSONObject 中获取的 id
+			store.addFavorite(id);
+			ui.showToast({ message: '已添加到收藏' });
 		}
 	}
 }
