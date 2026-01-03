@@ -118,24 +118,32 @@
 								></cl-checkbox>
 							</cl-col>
 							<cl-col :span="8">
+							<!-- NSFW 选项：需要 API Key -->
+							<view 
+								class="relative"
+								@tap="onNsfwTap"
+							>
 								<cl-checkbox
 									v-model="filterForm.purity"
-									label="NSFW"
+									:label="hasApiKey ? 'NSFW' : 'NSFW 🔒'"
 									value="nsfw"
 									:show-icon="false"
+									:disabled="!hasApiKey"
 									:pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
 											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[!hasApiKey, 'opacity-50'],
 											[
-												filterForm.purity.includes('nsfw'),
+												filterForm.purity.includes('nsfw') && hasApiKey,
 												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
 											]
 										]),
 										label: { className: 'text-sm' }
 									}"
 								></cl-checkbox>
-							</cl-col>
+							</view>
+						</cl-col>
 						</cl-row>
 					</cl-form-item>
 
@@ -321,8 +329,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, computed, onMounted } from "vue";
 import { useStore, isDark, parseClass } from "@/cool";
+import { useUi } from "@/uni_modules/cool-ui";
 import type { FilterForm } from "@/types/wallhaven";
 import {
 	SORTING_OPTIONS,
@@ -335,6 +344,7 @@ import {
 
 const { wallhaven } = useStore();
 const store = wallhaven;
+const ui = useUi();
 
 const props = defineProps({
 	visible: {
@@ -356,6 +366,11 @@ const filterForm = reactive<FilterForm>({
 	colors: [] as string[]
 });
 
+// 是否有 API Key
+const hasApiKey = computed((): boolean => {
+	return store.apiKey.value != null && store.apiKey.value.trim() !== '';
+});
+
 // 使用共享常量
 const sortingOptions = ref<OptionItem[]>(SORTING_OPTIONS);
 const topRangeOptions = ref<OptionItem[]>(TOP_RANGE_OPTIONS);
@@ -364,6 +379,15 @@ const colorOptions = ref<ColorOption[]>(COLOR_OPTIONS);
 
 function onUpdateVisible(val: boolean) {
 	emit("update:visible", val);
+}
+
+// NSFW 选项点击处理
+function onNsfwTap() {
+	if (!hasApiKey.value) {
+		ui.showToast({
+			message: '需要配置 API Key 才能启用 NSFW 内容'
+		});
+	}
 }
 
 // 切换颜色选择

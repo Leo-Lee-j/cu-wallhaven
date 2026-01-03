@@ -8,12 +8,14 @@ export type OptionItem = {
 	value: string;
 }
 
-// 排序选项
+// 排序选项（按接口文档顺序）
 export const SORTING_OPTIONS: OptionItem[] = [
 	{ label: "最新", value: "date_added" },
-	{ label: "热门", value: "toplist" },
+	{ label: "相关", value: "relevance" },
 	{ label: "随机", value: "random" },
-	{ label: "浏览", value: "views" }
+	{ label: "浏览", value: "views" },
+	{ label: "收藏", value: "favorites" },
+	{ label: "热门", value: "toplist" }
 ];
 
 // 热门时间范围选项

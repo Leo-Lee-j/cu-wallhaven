@@ -51,11 +51,14 @@ export class WallhavenStore {
 	 * 从本地存储加载数据
 	 */
 	load() {
+		console.log('[WallhavenStore] ===== 开始加载本地存储数据 =====');
 		const apiKey = storage.get("wallhaven_apiKey") as string | null;
 		const username = storage.get("wallhaven_username") as string | null;
 		const searchHistory = storage.get("wallhaven_searchHistory");
 		const localFavorites = storage.get("wallhaven_localFavorites");
 		const filterForm = storage.get("wallhaven_filterForm");
+		console.log('[WallhavenStore] 读取到的 filterForm 原始数据:', filterForm);
+		console.log('[WallhavenStore] filterForm 类型:', typeof filterForm);
 
 		if (apiKey != null) {
 			this.apiKey.value = apiKey;
@@ -63,7 +66,7 @@ export class WallhavenStore {
 		if (username != null) {
 			this.username.value = username;
 		}
-		
+
 		// 处理 searchHistory - 如果是字符串则解析,否则直接使用
 		if (searchHistory != null) {
 			if (typeof searchHistory === 'string') {
@@ -82,7 +85,7 @@ export class WallhavenStore {
 				this.searchHistory.value = searchHistory as string[];
 			}
 		}
-		
+
 		// 处理 localFavorites - 如果是字符串则解析,否则直接使用
 		if (localFavorites != null) {
 			if (typeof localFavorites === 'string') {
@@ -101,41 +104,51 @@ export class WallhavenStore {
 				this.localFavorites.value = localFavorites as string[];
 			}
 		}
-		
+
 		//处理 filterForm - 如果是字符串则解析,否则直接使用
 		if (filterForm != null) {
+			console.log('[WallhavenStore] filterForm 不为空，开始解析');
+			let parsedForm: UTSJSONObject | null = null;
+
 			if (typeof filterForm === 'string') {
-				// 检查字符串是否非空
+				console.log('[WallhavenStore] filterForm 是字符串类型');
 				if (filterForm.trim().length > 0) {
 					try {
 						const parsed = JSON.parse(filterForm);
+						console.log('[WallhavenStore] JSON 解析结果:', parsed);
 						if (parsed != null && typeof parsed === 'object') {
-							// 手动构建 FilterForm 对象 - 逐个属性赋值
-							const obj = parsed as UTSJSONObject;
-							this.filterForm.value.categories = obj['categories'] as string[] ?? ["general", "anime", "people"];
-							this.filterForm.value.purity = obj['purity'] as string[] ?? ["sfw"];
-							this.filterForm.value.sorting = obj['sorting'] as string ?? "date_added";
-							this.filterForm.value.topRange = obj['topRange'] as string ?? "1M";
-							this.filterForm.value.ratios = obj['ratios'] as string[] ?? [];
-							this.filterForm.value.wallpaperType = (obj['wallpaperType'] as 'all' | 'pc' | 'mobile') ?? 'all';
-							this.filterForm.value.colors = obj['colors'] as string[] ?? [];
+							parsedForm = parsed as UTSJSONObject;
 						}
 					} catch (err) {
 						console.error("解析 filterForm 失败:", err);
 					}
 				}
 			} else if (typeof filterForm === 'object') {
-			// 手动构建 FilterForm 对象 - 逐个属性赋值
-			const obj = filterForm as UTSJSONObject;
-			this.filterForm.value.categories = obj['categories'] as string[] ?? ["general", "anime", "people"];
-			this.filterForm.value.purity = obj['purity'] as string[] ?? ["sfw"];
-			this.filterForm.value.sorting = obj['sorting'] as string ?? "date_added";
-			this.filterForm.value.topRange = obj['topRange'] as string ?? "1M";
-			this.filterForm.value.ratios = obj['ratios'] as string[] ?? [];
-			this.filterForm.value.wallpaperType = (obj['wallpaperType'] as 'all' | 'pc' | 'mobile') ?? 'all';
-			this.filterForm.value.colors = obj['colors'] as string[] ?? [];
+				console.log('[WallhavenStore] filterForm 是对象类型');
+				parsedForm = filterForm as UTSJSONObject;
+			}
+
+			if (parsedForm != null) {
+				const obj = parsedForm;
+				const wallpaperTypeValue = obj['wallpaperType'] as string | null;
+				console.log('[WallhavenStore] 解析到的 wallpaperType:', wallpaperTypeValue, '类型:', typeof wallpaperTypeValue);
+
+				// 逐个属性赋值（UTS 不支持对象字面量直接赋值给 FilterForm 类型）
+				this.filterForm.value.categories = (obj['categories'] as string[]) ?? ["general", "anime", "people"];
+				this.filterForm.value.purity = (obj['purity'] as string[]) ?? ["sfw"];
+				this.filterForm.value.sorting = (obj['sorting'] as string) ?? "date_added";
+				this.filterForm.value.topRange = (obj['topRange'] as string) ?? "1M";
+				this.filterForm.value.ratios = (obj['ratios'] as string[]) ?? [];
+				this.filterForm.value.wallpaperType = (wallpaperTypeValue as 'all' | 'pc' | 'mobile') ?? 'all';
+				this.filterForm.value.colors = (obj['colors'] as string[]) ?? [];
+				console.log('[WallhavenStore] filterForm 恢复成功, wallpaperType =', this.filterForm.value.wallpaperType);
+			}
+		} else {
+			console.log('[WallhavenStore] filterForm 为空，使用默认值');
 		}
-		}
+
+		console.log('[WallhavenStore] ===== 本地存储加载完成 =====');
+		console.log('[WallhavenStore] 最终 filterForm:', JSON.stringify(this.filterForm.value));
 	}
 
 	/**
@@ -276,24 +289,28 @@ export class WallhavenStore {
 	 * 构建宽高比参数，根据 wallpaperType 和 ratios 合并
 	 */
 	private buildRatios(): string {
-		const wallpaperType = this.filterForm.value?.wallpaperType ?? 'all';
+		const rawWallpaperType = this.filterForm.value?.wallpaperType;
+		// 强制转换为字符串，解决 UTS 类型比较问题
+		const wallpaperType: string = rawWallpaperType != null ? (rawWallpaperType as string) : 'all';
 		const customRatios = this.filterForm.value?.ratios ?? [];
-		
+
+		console.log('[筛选] buildRatios - rawWallpaperType:', rawWallpaperType, '转换后:', wallpaperType);
+
 		const ratioList: string[] = [];
-		
+
 		// 根据壁纸类型添加预设比例
-		if (wallpaperType === 'pc') {
+		if (wallpaperType == 'pc') {
 			// PC壁纸 - 横屏比例
 			ratioList.push('16x9', '16x10', '21x9', '32x9', '4x3', '5x4');
 			console.log('[筛选] PC壁纸模式,添加横屏比例');
-		} else if (wallpaperType === 'mobile') {
+		} else if (wallpaperType == 'mobile') {
 			// 手机壁纸 - 竖屏比例
 			ratioList.push('9x16', '10x16', '9x18', '9x19.5', '9x20');
 			console.log('[筛选] 手机壁纸模式,添加竖屏比例');
 		} else {
-			console.log('[筛选] 全部壁纸模式,不限制宽高比');
+			console.log('[筛选] 全部壁纸模式,不限制宽高比, wallpaperType =', wallpaperType);
 		}
-		
+
 		// 添加自定义比例，去重
 		if (customRatios != null && Array.isArray(customRatios) && customRatios.length > 0) {
 			console.log('[筛选] 自定义比例:', customRatios);
@@ -303,7 +320,7 @@ export class WallhavenStore {
 				}
 			}
 		}
-		
+
 		const result = ratioList.join(',');
 		console.log('[筛选] 最终宽高比参数:', result === '' ? '无限制' : result);
 		return result;
@@ -321,14 +338,14 @@ export class WallhavenStore {
 		console.log('[筛选] 当前 sorting:', this.filterForm.value?.sorting);
 		console.log('[筛选] 当前 ratios:', this.filterForm.value?.ratios);
 		console.log('[筛选] 当前 colors:', this.filterForm.value?.colors);
-		
+
 		const queryParts: string[] = [];
-		
+
 		// 将 params 转换为 UTSJSONObject 以访问属性
 		const p = params as UTSJSONObject;
 
 		// 关键词
-		const q =  (p != null ? p['q'] : null) as string | null;
+		const q = (p != null ? p['q'] : null) as string | null;
 		if (q != null && q !== "") {
 			queryParts.push(`q=${encodeURIComponent(q)}`);
 		}
