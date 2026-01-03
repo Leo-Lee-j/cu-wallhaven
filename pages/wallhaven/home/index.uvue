@@ -84,8 +84,15 @@
 				</template>
 			</cl-waterfall>
 
+			<!-- 空状态提示 -->
+			<view v-if="isEmpty && !loading" class="empty-state flex flex-col items-center justify-center py-20">
+				<cl-icon name="image-line" :size="120" :pt="{ className: 'text-surface-300 dark:!text-surface-600' }"></cl-icon>
+				<cl-text :pt="{ className: 'mt-4 text-surface-400 dark:!text-surface-500' }">暂无搜索结果</cl-text>
+				<cl-text :pt="{ className: 'mt-2 text-sm text-surface-300 dark:!text-surface-600' }">换个关键词或调整筛选条件试试</cl-text>
+			</view>
+
 			<view class="h-12 flex flex-row items-center justify-center w-full">
-				<cl-loadmore :loading="loading" :finished="finished"></cl-loadmore>
+				<cl-loadmore v-if="!isEmpty" :loading="loading" :finished="finished"></cl-loadmore>
 			</view>
 		</view>
 
@@ -132,6 +139,7 @@ const rightDrawerVisible = ref(false);
 // 加载状态
 const loading = ref(false);
 const finished = ref(false);
+const isEmpty = ref(false); // 无数据状态
 
 // 当前页码
 let currentPage = 1;
@@ -167,6 +175,10 @@ async function loadData() {
 		if (wallpapers.length === 0) {
 			console.log("返回数据为空");
 			finished.value = true;
+			// 第一页就没有数据，设置空状态
+			if (currentPage === 1) {
+				isEmpty.value = true;
+			}
 		} else {
 			console.log(`获取到 ${wallpapers.length} 条数据，准备追加到瀑布流`);
 			
@@ -214,6 +226,7 @@ async function refreshList() {
 	currentPage = 1;
 	randomSeed = "";
 	finished.value = false;
+	isEmpty.value = false; // 重置空状态
 	waterfallRef.value?.clear();
 	await loadData();
 }
