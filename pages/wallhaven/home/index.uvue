@@ -321,6 +321,9 @@ onPullDownRefresh(() => {
 
 // 初始化
 onMounted(() => {
+	// 确保 store 数据已从本地存储加载（应用重启后需要重新加载）
+	store.load();
+	console.log('[首页] 初始化，当前筛选状态:', JSON.stringify(store.filterForm.value));
 	refreshList();
 });
 </script>
