@@ -1,5 +1,5 @@
 <template>
-	<cl-page 
+	<cl-page
 		:back-top="true"
 	>
 		<!-- 顶部导航栏 -->
@@ -71,32 +71,16 @@
 
 		<!-- 壁纸列表（带过渡动画） -->
 		<view v-show="!showSearchHistory" class="wallpaper-container p-2">
-			<waterflow 
-				ref="waterfallRef"
-				:cross-axis-count="2"
-				cross-axis-gap="12rpx"
-				main-axis-gap="12rpx"
-				@scrolltolower="loadData"
-				:lower-threshold="800"
-				class="flex-1"
-				:refresher-enabled="true"
-				:refresher-triggered="refresherTriggered"
-				@refresherrefresh="onRefresherrefresh"
-			>
-				<flow-item v-for="(item, index) in wallpapers" :key="getItemId(item, index)">
-					<wallpaper-item 
-						:item="item" 
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+				<template #item="{ item }">
+					<wallpaper-item
+						:item="item"
 						:favorited="isFavorited(item)"
 						@tap="toDetail(item)"
 						@favorite="onFavorite"
 					></wallpaper-item>
-				</flow-item>
-				
-				<!-- 加载更多（官方） -->
-				<flow-item v-if="!isEmpty" slot="load-more" class="w-full">
-					<cl-loadmore :loading="loading" :finished="finished"></cl-loadmore>
-				</flow-item>
-			</waterflow>
+				</template>
+			</cl-waterfall>
 
 			<!-- 空状态提示 -->
 			<view v-if="isEmpty && !loading" class="empty-state flex flex-col items-center justify-center py-20">
@@ -104,14 +88,18 @@
 				<cl-text :pt="{ className: 'mt-4 text-surface-400 dark:!text-surface-500' }">暂无搜索结果</cl-text>
 				<cl-text :pt="{ className: 'mt-2 text-sm text-surface-300 dark:!text-surface-600' }">换个关键词或调整筛选条件试试</cl-text>
 			</view>
+
+			<view class="h-12 flex flex-row items-center justify-center w-full">
+				<cl-loadmore v-if="!isEmpty" :loading="loading" :finished="finished"></cl-loadmore>
+			</view>
 		</view>
 
 		<!-- 左侧抽屉菜单组件 -->
 		<menu-drawer v-model:visible="leftDrawerVisible"></menu-drawer>
 
 		<!-- 右侧筛选抽屉组件 -->
-		<filter-drawer 
-			v-model:visible="rightDrawerVisible" 
+		<filter-drawer
+			v-model:visible="rightDrawerVisible"
 			@confirm="refreshList"
 		></filter-drawer>
 	</cl-page>
@@ -121,6 +109,7 @@
 import { ref, onMounted } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import type { Wallpaper } from "@/types/wallhaven";
 import WallpaperItem from "../components/wallpaper-item.uvue";
 import FilterDrawer from "./components/FilterDrawer.uvue";
 import MenuDrawer from "./components/MenuDrawer.uvue";
@@ -130,11 +119,8 @@ const ui = useUi();
 const { wallhaven } = useStore();
 const store = wallhaven;
 
-// 瀑布流引用（官方 waterflow 组件）
-const waterfallRef = ref(null);
-
-// 壁纸数据列表
-const wallpapers = ref<UTSJSONObject[]>([]);
+// 瀑布流引用
+const waterfallRef = ref<ClWaterfallComponentPublicInstance | null>(null);
 
 // 搜索关键词
 const searchKeyword = ref("");
@@ -153,27 +139,11 @@ const loading = ref(false);
 const finished = ref(false);
 const isEmpty = ref(false); // 无数据状态
 
-// 下拉刷新状态（官方）
-const refresherTriggered = ref(false);
-
 // 当前页码
 let currentPage = 1;
 
 // 随机种子（用于 random 排序时保持分页一致性）
 let randomSeed: string | null = null;
-
-// 获取 item 的 ID（用于 flow-item 的 key）
-function getItemId(item: any, index: number): string {
-	const obj = item as UTSJSONObject | null;
-	if (obj != null) {
-		const id = obj.getString('id');
-		if (id != null) {
-			return id;
-		}
-	}
-	// 如果没有 ID，使用索引
-	return `item-${index}`;
-}
 
 // 加载数据
 async function loadData() {
@@ -198,9 +168,9 @@ async function loadData() {
 
 		// 将 response 转换为 UTSJSONObject 以访问属性
 		const jsonResponse = response as UTSJSONObject;
-		const newWallpapers = jsonResponse['data'] as any[];
+		const wallpapers = jsonResponse['data'] as any[];
 
-		if (newWallpapers.length === 0) {
+		if (wallpapers.length === 0) {
 			console.log("返回数据为空");
 			finished.value = true;
 			// 第一页就没有数据，设置空状态
@@ -208,17 +178,19 @@ async function loadData() {
 				isEmpty.value = true;
 			}
 		} else {
-			console.log(`获取到 ${newWallpapers.length} 条数据，追加到壁纸列表`);
-			
-			// 直接追加到 wallpapers，官方 waterflow 组件会自动处理渲染和复用
-			wallpapers.value.push(...(newWallpapers as UTSJSONObject[]));
-			console.log(`当前壁纸总数: ${wallpapers.value.length}`);
+			console.log(`获取到 ${wallpapers.length} 条数据，准备追加到瀑布流`);
 
+			if (waterfallRef.value == null) {
+				console.error("waterfallRef 为空，无法追加数据！");
+			} else {
+				// @ts-ignore
+				waterfallRef.value?.append(wallpapers as UTSJSONObject[]);
+			}
 
 			// 保存随机种子
 			const meta = jsonResponse['meta'] as UTSJSONObject | null;
 			if (meta != null) {
-				const seed = meta.getString('seed');
+				const seed = meta?.getString('seed');
 				if (seed != null) {
 					randomSeed = seed;
 				}
@@ -226,7 +198,7 @@ async function loadData() {
 
 			// 检查是否最后一页
 			if (meta != null) {
-				const lastPage = meta.getNumber('last_page') ?? 1;
+				const lastPage = meta?.getNumber('last_page') ?? 1;
 				if (currentPage >= lastPage) {
 					finished.value = true;
 				} else {
@@ -252,11 +224,8 @@ async function refreshList() {
 	currentPage = 1;
 	randomSeed = "";
 	finished.value = false;
-	isEmpty.value = false;
-	
-	// 清空壁纸列表
-	wallpapers.value = [];
-	
+	isEmpty.value = false; // 重置空状态
+	waterfallRef.value?.clear();
 	await loadData();
 }
 
@@ -329,9 +298,9 @@ function isFavorited(item: any): boolean {
 function onFavorite(item: any) {
 	const obj = item as UTSJSONObject | null;
 	if (obj == null) return;
-	
+
 	const id = obj?.getString("id");
-	
+
 	if (id != null) {
 		if (store.isFavorite(id)) {
 			store.removeFavorite(id);
@@ -344,24 +313,19 @@ function onFavorite(item: any) {
 	}
 }
 
-
-
-// 下拉刷新（官方 waterflow）
-function onRefresherrefresh() {
-	refresherTriggered.value = true;
-	
+// 下拉刷新
+onPullDownRefresh(() => {
 	// 重置分页
 	currentPage = 1;
 	randomSeed = "";
 	finished.value = false;
-	
-	// 清空壁纸列表
-	wallpapers.value = [];
-	
+	// 清空瀑布流
+	waterfallRef.value?.clear();
+
 	loadData().then(() => {
-		refresherTriggered.value = false;
+		uni.stopPullDownRefresh();
 	});
-}
+});
 
 // 初始化
 onMounted(() => {

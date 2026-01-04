@@ -1,10 +1,12 @@
 <template>
-	<cl-page 
+	<cl-page
 		:back-top="true"
+		:lower-threshold="300"
+		@scrolltolower="loadData"
 	>
 		<!-- 顶部导航栏 -->
-		<cl-topbar 
-			fixed 
+		<cl-topbar
+			fixed
 			safe-area-top
 			:pt="{
 				back: {
@@ -25,27 +27,13 @@
 
 		<!-- 壁纸列表 -->
 		<view class="wallpaper-container p-2">
-			<waterflow 
-				ref="waterfallRef" 
-				:cross-axis-count="2" 
-				cross-axis-gap="12rpx" 
-				main-axis-gap="12rpx"
-				@scrolltolower="loadData"
-				:lower-threshold="800"
-				class="flex-1"
-				:refresher-enabled="true"
-				:refresher-triggered="refresherTriggered"
-				@refresherrefresh="onRefresherrefresh"
-			>
-				<flow-item v-for="(item, index) in wallpapers" :key="getItemId(item, index)">
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+				<template #item="{ item }">
 					<wallpaper-item :item="item" @tap="toDetail(item)"></wallpaper-item>
-				</flow-item>
-				
-				<!-- 加载更多 -->
-				<flow-item slot="load-more" class="w-full">
-					<cl-loadmore :loading="loading" :finished="finished" safe-area-bottom></cl-loadmore>
-				</flow-item>
-			</waterflow>
+				</template>
+			</cl-waterfall>
+
+			<cl-loadmore :loading="loading" :finished="finished" safe-area-bottom></cl-loadmore>
 		</view>
 
 		<!-- 加载中状态 -->
@@ -99,7 +87,7 @@ const collectionId = ref<number>(0);
 const collectionName = ref<string>("未命名收藏夹");
 
 // 瀑布流引用
-const waterfallRef = ref(null);
+const waterfallRef = ref<ClWaterfallComponentPublicInstance | null>(null);
 
 // 壁纸列表
 const wallpapers = ref<UTSJSONObject[]>([]);
@@ -109,26 +97,11 @@ const loading = ref(false);
 const finished = ref(false);
 const error = ref("");
 
-// 下拉刷新状态
-const refresherTriggered = ref(false);
-
 // 当前页码
 let currentPageNum = 1;
 
 // 总数
 const totalCount = ref<number>(-1);
-
-// 获取 item 的 ID（用于 flow-item 的 key）
-function getItemId(item: any, index: number): string {
-	const obj = item as UTSJSONObject | null;
-	if (obj != null) {
-		const id = obj.getString('id');
-		if (id != null) {
-			return id;
-		}
-	}
-	return `item-${index}`;
-}
 
 // 加载数据
 async function loadData() {
@@ -151,8 +124,9 @@ async function loadData() {
 		if (newWallpapers.length === 0) {
 			finished.value = true;
 		} else {
-			// 直接追加到 wallpapers，官方 waterflow 组件会自动处理渲染
 			wallpapers.value.push(...newWallpapers);
+			// @ts-ignore
+			waterfallRef.value?.append(newWallpapers as UTSJSONObject[]);
 
 			// 更新总数
 			const meta = responseObj['meta'] as UTSJSONObject | null;
@@ -183,23 +157,12 @@ async function loadData() {
 	}
 }
 
-// 下拉刷新
-function onRefresherrefresh() {
-	refresherTriggered.value = true;
-	currentPageNum = 1;
-	finished.value = false;
-	wallpapers.value = [];
-	
-	loadData().then(() => {
-		refresherTriggered.value = false;
-	});
-}
-
 // 重试
 function retry() {
 	currentPageNum = 1;
 	finished.value = false;
 	wallpapers.value = [];
+	waterfallRef.value?.clear();
 	loadData();
 }
 
@@ -220,7 +183,7 @@ onLoad((options) => {
 	username.value = (options?.["username"] as string) ?? "";
 	collectionId.value = parseInt((options?.["id"] as string) ?? "0");
 	collectionName.value = decodeURIComponent((options?.["name"] as string) ?? "未命名收藏夹") ?? "未命名收藏夹";
-	
+
 	if (username.value === '' || collectionId.value === 0) {
 		error.value = "缺少必要参数";
 		return;
