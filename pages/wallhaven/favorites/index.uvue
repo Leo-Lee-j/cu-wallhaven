@@ -8,18 +8,27 @@
 
 		<!-- 有数据状态 -->
 		<view class="p-2" v-else-if="favorites.length > 0">
-			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
-				<template #item="{ item }">
+			<waterflow 
+				ref="waterfallRef" 
+				:cross-axis-count="2" 
+				cross-axis-gap="12rpx" 
+				main-axis-gap="12rpx"
+				class="flex-1"
+			>
+				<flow-item v-for="(item, index) in favorites" :key="getItemId(item, index)">
 					<wallpaper-item
 						:item="item"
 						:show-delete="true"
 						@tap="toDetail(item)"
 						@delete="removeFavorite(item)"
 					></wallpaper-item>
-				</template>
-			</cl-waterfall>
-
-			<cl-loadmore :loading="loading" :finished="true" safe-area-bottom></cl-loadmore>
+				</flow-item>
+				
+				<!-- 加载状态 -->
+				<flow-item slot="load-more" class="w-full">
+					<cl-loadmore :loading="loading" :finished="true" safe-area-bottom></cl-loadmore>
+				</flow-item>
+			</waterflow>
 		</view>
 
 		<!-- 空状态 -->
@@ -41,13 +50,25 @@ const ui = useUi();
 const { wallhaven } = useStore();
 
 // 瀑布流引用
-const waterfallRef = ref<ClWaterfallComponentPublicInstance | null>(null);
+const waterfallRef = ref(null);
 
 // 收藏列表
 const favorites = ref<UTSJSONObject[]>([]);
 
 // 加载状态
 const loading = ref(false);
+
+// 获取 item 的 ID（用于 flow-item 的 key）
+function getItemId(item: any, index: number): string {
+	const obj = item as UTSJSONObject | null;
+	if (obj != null) {
+		const id = obj.getString('id');
+		if (id != null) {
+			return id;
+		}
+	}
+	return `item-${index}`;
+}
 
 
 // 加载收藏的壁纸详情
@@ -81,15 +102,7 @@ async function loadFavorites() {
 		}
 
 		favorites.value = wallpapers;
-		
-		// 使用 nextTick 确保 v-if 条件变化后瀑布流组件渲染完成
-		await nextTick();
-		waterfallRef.value?.clear();
-		
-        if (wallpapers.length > 0) {
-            // @ts-ignore
-            waterfallRef.value?.append(wallpapers);
-        }
+		// waterflow 组件会自动渲染，不需要手动 append
 	} catch (err: any) {
 		ui.showToast({
 			message: err.message ?? "加载失败"
@@ -121,7 +134,7 @@ function removeFavorite(item: any) {
 				const index = favorites.value.findIndex((w) => w.getString('id') === id);
 				if (index > -1) {
 					favorites.value.splice(index, 1);
-					waterfallRef.value?.remove(id);
+					// 响应式数据会自动更新 UI，不需要手动调用 waterflow 的方法
 				}
 
 				ui.showToast({ message: "已取消收藏" });
