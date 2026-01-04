@@ -1,12 +1,12 @@
 <template>
-	<cl-page 
-		:back-top="true" 
-		:lower-threshold="300" 
+	<cl-page
+		:back-top="true"
+		:lower-threshold="300"
 		@scrolltolower="loadData"
 	>
 		<!-- 顶部导航栏 -->
-		<cl-topbar 
-			fixed 
+		<cl-topbar
+			fixed
 			safe-area-top
 			:pt="{
 				back: {
@@ -183,7 +183,7 @@ onLoad((options) => {
 	username.value = (options?.["username"] as string) ?? "";
 	collectionId.value = parseInt((options?.["id"] as string) ?? "0");
 	collectionName.value = decodeURIComponent((options?.["name"] as string) ?? "未命名收藏夹") ?? "未命名收藏夹";
-	
+
 	if (username.value === '' || collectionId.value === 0) {
 		error.value = "缺少必要参数";
 		return;

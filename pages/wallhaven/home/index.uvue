@@ -1,8 +1,6 @@
 <template>
-	<cl-page 
+	<cl-page
 		:back-top="true"
-		:lower-threshold="300"
-		@scrolltolower="loadData"
 	>
 		<!-- 顶部导航栏 -->
 		<cl-topbar
@@ -75,8 +73,8 @@
 		<view v-show="!showSearchHistory" class="wallpaper-container p-2">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
 				<template #item="{ item }">
-					<wallpaper-item 
-						:item="item" 
+					<wallpaper-item
+						:item="item"
 						:favorited="isFavorited(item)"
 						@tap="toDetail(item)"
 						@favorite="onFavorite"
@@ -100,8 +98,8 @@
 		<menu-drawer v-model:visible="leftDrawerVisible"></menu-drawer>
 
 		<!-- 右侧筛选抽屉组件 -->
-		<filter-drawer 
-			v-model:visible="rightDrawerVisible" 
+		<filter-drawer
+			v-model:visible="rightDrawerVisible"
 			@confirm="refreshList"
 		></filter-drawer>
 	</cl-page>
@@ -181,7 +179,7 @@ async function loadData() {
 			}
 		} else {
 			console.log(`获取到 ${wallpapers.length} 条数据，准备追加到瀑布流`);
-			
+
 			if (waterfallRef.value == null) {
 				console.error("waterfallRef 为空，无法追加数据！");
 			} else {
@@ -300,9 +298,9 @@ function isFavorited(item: any): boolean {
 function onFavorite(item: any) {
 	const obj = item as UTSJSONObject | null;
 	if (obj == null) return;
-	
+
 	const id = obj?.getString("id");
-	
+
 	if (id != null) {
 		if (store.isFavorite(id)) {
 			store.removeFavorite(id);
@@ -323,17 +321,21 @@ onPullDownRefresh(() => {
 	finished.value = false;
 	// 清空瀑布流
 	waterfallRef.value?.clear();
-	
+
 	loadData().then(() => {
 		uni.stopPullDownRefresh();
 	});
+});
+
+// 滚动到底部加载更多
+onReachBottom(() => {
+	loadData();
 });
 
 // 初始化
 onMounted(() => {
 	// 确保 store 数据已从本地存储加载（应用重启后需要重新加载）
 	store.load();
-	console.log('[首页] 初始化，当前筛选状态:', JSON.stringify(store.filterForm.value));
 	refreshList();
 });
 </script>

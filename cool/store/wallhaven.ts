@@ -57,8 +57,6 @@ export class WallhavenStore {
 		const searchHistory = storage.get("wallhaven_searchHistory");
 		const localFavorites = storage.get("wallhaven_localFavorites");
 		const filterForm = storage.get("wallhaven_filterForm");
-		console.log('[WallhavenStore] 读取到的 filterForm 原始数据:', filterForm);
-		console.log('[WallhavenStore] filterForm 类型:', typeof filterForm);
 
 		if (apiKey != null) {
 			this.apiKey.value = apiKey;
@@ -107,15 +105,12 @@ export class WallhavenStore {
 
 		//处理 filterForm - 如果是字符串则解析,否则直接使用
 		if (filterForm != null) {
-			console.log('[WallhavenStore] filterForm 不为空，开始解析');
 			let parsedForm: UTSJSONObject | null = null;
 
 			if (typeof filterForm === 'string') {
-				console.log('[WallhavenStore] filterForm 是字符串类型');
 				if (filterForm.trim().length > 0) {
 					try {
 						const parsed = JSON.parse(filterForm);
-						console.log('[WallhavenStore] JSON 解析结果:', parsed);
 						if (parsed != null && typeof parsed === 'object') {
 							parsedForm = parsed as UTSJSONObject;
 						}
@@ -124,14 +119,12 @@ export class WallhavenStore {
 					}
 				}
 			} else if (typeof filterForm === 'object') {
-				console.log('[WallhavenStore] filterForm 是对象类型');
 				parsedForm = filterForm as UTSJSONObject;
 			}
 
 			if (parsedForm != null) {
 				const obj = parsedForm;
 				const wallpaperTypeValue = obj['wallpaperType'] as string | null;
-				console.log('[WallhavenStore] 解析到的 wallpaperType:', wallpaperTypeValue, '类型:', typeof wallpaperTypeValue);
 
 				// 逐个属性赋值（UTS 不支持对象字面量直接赋值给 FilterForm 类型）
 				this.filterForm.value.categories = (obj['categories'] as string[]) ?? ["general", "anime", "people"];
@@ -141,14 +134,12 @@ export class WallhavenStore {
 				this.filterForm.value.ratios = (obj['ratios'] as string[]) ?? [];
 				this.filterForm.value.wallpaperType = (wallpaperTypeValue as 'all' | 'pc' | 'mobile') ?? 'all';
 				this.filterForm.value.colors = (obj['colors'] as string[]) ?? [];
-				console.log('[WallhavenStore] filterForm 恢复成功, wallpaperType =', this.filterForm.value.wallpaperType);
 			}
 		} else {
 			console.log('[WallhavenStore] filterForm 为空，使用默认值');
 		}
 
 		console.log('[WallhavenStore] ===== 本地存储加载完成 =====');
-		console.log('[WallhavenStore] 最终 filterForm:', JSON.stringify(this.filterForm.value));
 	}
 
 	/**
@@ -287,6 +278,9 @@ export class WallhavenStore {
 
 	/**
 	 * 构建宽高比参数，根据 wallpaperType 和 ratios 合并
+	 * - wallpaperType 为 pc 时，使用 landscape 作为基础参数
+	 * - wallpaperType 为 mobile 时，使用 portrait 作为基础参数
+	 * - 然后添加用户手动选择的宽高比，组合发送（如：portrait,10x16）
 	 */
 	private buildRatios(): string {
 		const rawWallpaperType = this.filterForm.value?.wallpaperType;
@@ -294,26 +288,26 @@ export class WallhavenStore {
 		const wallpaperType: string = rawWallpaperType != null ? (rawWallpaperType as string) : 'all';
 		const customRatios = this.filterForm.value?.ratios ?? [];
 
-		console.log('[筛选] buildRatios - rawWallpaperType:', rawWallpaperType, '转换后:', wallpaperType);
+		console.log('[筛选] buildRatios - wallpaperType:', wallpaperType, 'customRatios:', customRatios);
 
 		const ratioList: string[] = [];
 
-		// 根据壁纸类型添加预设比例
+		// 根据壁纸类型使用 landscape/portrait 作为基础参数
 		if (wallpaperType == 'pc') {
-			// PC壁纸 - 横屏比例
-			ratioList.push('16x9', '16x10', '21x9', '32x9', '4x3', '5x4');
-			console.log('[筛选] PC壁纸模式,添加横屏比例');
+			// PC壁纸 - 使用 landscape 作为基础
+			ratioList.push('landscape');
+			console.log('[筛选] PC壁纸模式，添加 landscape 参数');
 		} else if (wallpaperType == 'mobile') {
-			// 手机壁纸 - 竖屏比例
-			ratioList.push('9x16', '10x16', '9x18', '9x19.5', '9x20');
-			console.log('[筛选] 手机壁纸模式,添加竖屏比例');
+			// 手机壁纸 - 使用 portrait 作为基础
+			ratioList.push('portrait');
+			console.log('[筛选] 手机壁纸模式，添加 portrait 参数');
 		} else {
-			console.log('[筛选] 全部壁纸模式,不限制宽高比, wallpaperType =', wallpaperType);
+			console.log('[筛选] 全部壁纸模式，不添加基础宽高比参数');
 		}
 
-		// 添加自定义比例，去重
+		// 添加用户手动选择的宽高比，去重
 		if (customRatios != null && Array.isArray(customRatios) && customRatios.length > 0) {
-			console.log('[筛选] 自定义比例:', customRatios);
+			console.log('[筛选] 添加用户手动选择的宽高比:', customRatios);
 			for (const ratio of customRatios) {
 				if (!ratioList.includes(ratio)) {
 					ratioList.push(ratio);
@@ -330,14 +324,6 @@ export class WallhavenStore {
 	 * 搜索壁纸
 	 */
 	async search(params: any = {}): Promise<any> {
-		// 打印当前筛选状态
-		console.log('[筛选] ===== 开始构建搜索参数 =====');
-		console.log('[筛选] 当前 wallpaperType:', this.filterForm.value?.wallpaperType);
-		console.log('[筛选] 当前 categories:', this.filterForm.value?.categories);
-		console.log('[筛选] 当前 purity:', this.filterForm.value?.purity);
-		console.log('[筛选] 当前 sorting:', this.filterForm.value?.sorting);
-		console.log('[筛选] 当前 ratios:', this.filterForm.value?.ratios);
-		console.log('[筛选] 当前 colors:', this.filterForm.value?.colors);
 
 		const queryParts: string[] = [];
 
@@ -405,7 +391,6 @@ export class WallhavenStore {
 
 		const url = `${API_BASE}/search?${queryParts.join("&")}`;
 		console.log('[筛选] 最终请求 URL:', url);
-		console.log('[筛选] ===== 参数构建完成 =====');
 
 		return new Promise((resolve, reject) => {
 			uni.request({
