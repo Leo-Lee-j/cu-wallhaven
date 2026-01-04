@@ -327,6 +327,11 @@ onPullDownRefresh(() => {
 	});
 });
 
+// 滚动到底部加载更多
+onReachBottom(() => {
+	loadData();
+});
+
 // 初始化
 onMounted(() => {
 	// 确保 store 数据已从本地存储加载（应用重启后需要重新加载）

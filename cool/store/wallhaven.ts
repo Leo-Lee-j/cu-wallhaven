@@ -278,6 +278,9 @@ export class WallhavenStore {
 
 	/**
 	 * 构建宽高比参数，根据 wallpaperType 和 ratios 合并
+	 * - wallpaperType 为 pc 时，使用 landscape 作为基础参数
+	 * - wallpaperType 为 mobile 时，使用 portrait 作为基础参数
+	 * - 然后添加用户手动选择的宽高比，组合发送（如：portrait,10x16）
 	 */
 	private buildRatios(): string {
 		const rawWallpaperType = this.filterForm.value?.wallpaperType;
@@ -285,23 +288,26 @@ export class WallhavenStore {
 		const wallpaperType: string = rawWallpaperType != null ? (rawWallpaperType as string) : 'all';
 		const customRatios = this.filterForm.value?.ratios ?? [];
 
-		console.log('[筛选] buildRatios - rawWallpaperType:', rawWallpaperType, '转换后:', wallpaperType);
+		console.log('[筛选] buildRatios - wallpaperType:', wallpaperType, 'customRatios:', customRatios);
 
 		const ratioList: string[] = [];
 
-		// 根据壁纸类型添加预设比例
+		// 根据壁纸类型使用 landscape/portrait 作为基础参数
 		if (wallpaperType == 'pc') {
-			// PC壁纸 - 横屏比例
-			ratioList.push('16x9', '16x10', '21x9', '32x9', '4x3', '5x4');
+			// PC壁纸 - 使用 landscape 作为基础
+			ratioList.push('landscape');
+			console.log('[筛选] PC壁纸模式，添加 landscape 参数');
 		} else if (wallpaperType == 'mobile') {
-			// 手机壁纸 - 竖屏比例
-			ratioList.push('9x16', '10x16', '9x18', '9x19.5', '9x20');
+			// 手机壁纸 - 使用 portrait 作为基础
+			ratioList.push('portrait');
+			console.log('[筛选] 手机壁纸模式，添加 portrait 参数');
 		} else {
-			console.log('[筛选] 全部壁纸模式,不限制宽高比, wallpaperType =', wallpaperType);
+			console.log('[筛选] 全部壁纸模式，不添加基础宽高比参数');
 		}
 
-		// 添加自定义比例，去重
+		// 添加用户手动选择的宽高比，去重
 		if (customRatios != null && Array.isArray(customRatios) && customRatios.length > 0) {
+			console.log('[筛选] 添加用户手动选择的宽高比:', customRatios);
 			for (const ratio of customRatios) {
 				if (!ratioList.includes(ratio)) {
 					ratioList.push(ratio);
