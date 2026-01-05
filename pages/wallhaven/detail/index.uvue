@@ -39,34 +39,34 @@
 				<scroll-view direction="vertical" class="detail-scroll" v-if="wallpaper">
 					<view class="px-4 pt-4 pb-4">
 						<cl-list>
-							<cl-list-item label="分辨率">
+							<cl-list-item :label="t('分辨率')">
 								<cl-text>{{ wallpaper?.getString('resolution') ?? '' }}</cl-text>
 							</cl-list-item>
-							<cl-list-item label="分类">
+							<cl-list-item :label="t('分类')">
 								<cl-tag size="small">{{ getCategoryLabel(wallpaper?.getString('category') ?? '')
 								}}</cl-tag>
 							</cl-list-item>
-							<cl-list-item label="内容分级">
+							<cl-list-item :label="t('内容分级')">
 								<cl-tag size="small" :type="getPurityType(wallpaper?.getString('purity') ?? '')">{{
 									getPurityLabel(wallpaper?.getString('purity') ?? '') }}</cl-tag>
 							</cl-list-item>
-							<cl-list-item label="浏览量">
+							<cl-list-item :label="t('浏览量')">
 								<cl-text>{{ wallpaper?.getNumber('views') ?? 0 }}</cl-text>
 							</cl-list-item>
-							<cl-list-item label="收藏数">
+							<cl-list-item :label="t('收藏数')">
 								<cl-text>{{ wallpaper?.getNumber('favorites') ?? 0 }}</cl-text>
 							</cl-list-item>
-							<cl-list-item label="文件大小">
+							<cl-list-item :label="t('文件大小')">
 								<cl-text>{{ formatFileSize(wallpaper?.getNumber('file_size') ?? 0) }}</cl-text>
 							</cl-list-item>
-							<cl-list-item label="文件类型">
+							<cl-list-item :label="t('文件类型')">
 								<cl-text>{{ wallpaper?.getString('file_type') ?? '' }}</cl-text>
 							</cl-list-item>
-							<cl-list-item v-if="wallpaper?.['uploader']" label="上传者">
+							<cl-list-item v-if="wallpaper?.['uploader']" :label="t('上传者')">
 								<cl-text>{{ (wallpaper?.['uploader'] as UTSJSONObject)?.getString('username') ?? ''
 								}}</cl-text>
 							</cl-list-item>
-							<cl-list-item label="上传时间">
+							<cl-list-item :label="t('上传时间')">
 								<cl-text>{{ wallpaper?.getString('created_at') ?? '' }}</cl-text>
 							</cl-list-item>
 						</cl-list>
@@ -74,7 +74,7 @@
 						<!-- 标签 -->
 						<view class="mt-3"
 							v-if="wallpaper?.['tags'] != null && ((wallpaper?.['tags'] as any[])?.length ?? 0) > 0">
-							<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">标签</cl-text>
+							<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">{{ t('标签') }}</cl-text>
 							<view class="flex flex-row flex-wrap">
 								<cl-tag v-for="tag in (wallpaper?.['tags'] as any[])"
 									:key="(tag as UTSJSONObject).getNumber('id') ?? 0" size="small"
@@ -86,7 +86,7 @@
 						<!-- 颜色 -->
 						<view class="mt-3"
 							v-if="wallpaper?.['colors'] != null && ((wallpaper?.['colors'] as string[])?.length ?? 0) > 0">
-							<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">主要颜色</cl-text>
+							<cl-text :pt="{ className: 'text-sm text-white/60 mb-2' }">{{ t('主要颜色') }}</cl-text>
 							<view class="flex flex-row flex-wrap">
 								<view v-for="(color, index) in (wallpaper?.['colors'] as string[])" :key="index"
 									class="w-8 h-8 rounded-lg mr-2 mb-2 border border-white/20"
@@ -104,14 +104,14 @@
 					<cl-loading v-if="downloading" :size="32" color="white"></cl-loading>
 					<template v-else>
 						<cl-icon name="download-line" :size="36" color="white"></cl-icon>
-						<cl-text :pt="{ className: 'text-white ml-2' }">下载</cl-text>
+						<cl-text :pt="{ className: 'text-white ml-2' }">{{ t('下载') }}</cl-text>
 					</template>
 				</view>
 				<view class="flex-1 h-[88rpx] rounded-xl bg-white/20 flex flex-row items-center justify-center ml-3"
 					@tap="toggleDetail">
 					<cl-icon :name="detailVisible ? 'arrow-down-s-line' : 'arrow-up-s-line'" :size="36"
 						color="white"></cl-icon>
-					<cl-text :pt="{ className: 'text-white ml-2' }">{{ detailVisible ? '收起' : '详情' }}</cl-text>
+					<cl-text :pt="{ className: 'text-white ml-2' }">{{ detailVisible ? t('收起') : t('详情') }}</cl-text>
 				</view>
 			</view>
 
@@ -124,6 +124,7 @@
 import { ref, computed, onMounted } from "vue";
 import { useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import { t } from "@/locale";
 import type { Wallpaper } from "@/types/wallhaven";
 
 const ui = useUi();
@@ -171,10 +172,10 @@ function toggleFullscreen() {
 function toggleFavorite() {
 	if (isFavorite.value) {
 		wallhaven.removeFavorite(wallpaperId.value);
-		ui.showToast({ message: "已取消收藏" });
+		ui.showToast({ message: t("已取消收藏") });
 	} else {
 		wallhaven.addFavorite(wallpaperId.value);
-		ui.showToast({ message: "已收藏", icon: "heart-fill" });
+		ui.showToast({ message: t("已收藏"), icon: "heart-fill" });
 	}
 }
 
@@ -217,13 +218,13 @@ async function downloadWallpaper() {
 		});
 
 		ui.showToast({
-			message: "已保存到相册",
+			message: t("已保存到相册"),
 			icon: "check-line"
 		});
 	} catch (err: any) {
 		const error = err as DownloadError
 		ui.showToast({
-			message: error.errMsg ?? "下载失败"
+			message: error.errMsg ?? t("下载失败")
 		});
 	} finally {
 		downloading.value = false;
@@ -234,11 +235,11 @@ async function downloadWallpaper() {
 function getCategoryLabel(category: string): string {
 	switch (category) {
 		case "general":
-			return "综合";
+			return t("综合");
 		case "anime":
-			return "动漫";
+			return t("动漫");
 		case "people":
-			return "人物";
+			return t("人物");
 		default:
 			return category;
 	}
@@ -248,11 +249,11 @@ function getCategoryLabel(category: string): string {
 function getPurityLabel(purity: string): string {
 	switch (purity) {
 		case "sfw":
-			return "安全";
+			return t("安全");
 		case "sketchy":
-			return "轻微";
+			return t("轻微");
 		case "nsfw":
-			return "成人";
+			return t("成人");
 		default:
 			return purity;
 	}
@@ -286,7 +287,7 @@ async function loadWallpaper() {
 		wallpaper.value = result as UTSJSONObject;
 	} catch (err: any) {
 		ui.showToast({
-			message: err.message ?? "加载失败"
+			message: err.message ?? t("加载失败")
 		});
 	}
 }

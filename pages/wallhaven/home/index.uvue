@@ -14,13 +14,13 @@
 
 				<!-- 中间搜索框 -->
 				<view class="flex-1 mx-3" @tap="onSearchFocus">
-					<cl-input v-model="searchKeyword" placeholder="搜索壁纸..." prefix-icon="search-line" clearable
+					<cl-input v-model="searchKeyword" :placeholder="t('搜索壁纸...')" prefix-icon="search-line" clearable
 						:pt="{ className: 'rounded-full' }" @confirm="onSearch"></cl-input>
 				</view>
 
 				<!-- 右侧按钮：搜索模式下显示取消，正常模式显示刷新和筛选 -->
 				<view v-if="showSearchHistory">
-					<cl-text :pt="{ className: 'text-primary-500' }" @tap="cancelSearch">取消
+					<cl-text :pt="{ className: 'text-primary-500' }" @tap="cancelSearch">{{ t('取消') }}
 					</cl-text>
 				</view>
 				<view v-else class="flex flex-row items-center">
@@ -57,9 +57,10 @@
 			<view v-if="isEmpty && !loading" class="empty-state flex flex-col items-center justify-center py-20">
 				<cl-icon name="image-line" :size="120"
 					:pt="{ className: 'text-surface-300 dark:!text-surface-600' }"></cl-icon>
-				<cl-text :pt="{ className: 'mt-4 text-surface-400 dark:!text-surface-500' }">暂无搜索结果</cl-text>
-				<cl-text
-					:pt="{ className: 'mt-2 text-sm text-surface-300 dark:!text-surface-600' }">换个关键词或调整筛选条件试试</cl-text>
+				<cl-text :pt="{ className: 'mt-4 text-surface-400 dark:!text-surface-500' }">{{ t('暂无搜索结果') }}</cl-text>
+				<cl-text :pt="{ className: 'mt-2 text-sm text-surface-300 dark:!text-surface-600' }">{{
+					t('换个关键词或调整筛选条件试试')
+				}}</cl-text>
 			</view>
 
 			<view class="h-12 flex flex-row items-center justify-center w-full">
@@ -79,6 +80,7 @@
 import { ref, onMounted } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import { t } from "@/locale";
 import type { Wallpaper } from "@/types/wallhaven";
 import WallpaperItem from "../components/wallpaper-item.uvue";
 import FilterDrawer from "./components/FilterDrawer.uvue";
@@ -274,11 +276,11 @@ function onFavorite(item: any) {
 	if (id != null) {
 		if (store.isFavorite(id)) {
 			store.removeFavorite(id);
-			ui.showToast({ message: '已取消收藏' });
+			ui.showToast({ message: t('已取消收藏') });
 		} else {
 			// 直接使用从 UTSJSONObject 中获取的 id
 			store.addFavorite(id);
-			ui.showToast({ message: '已添加到收藏' });
+			ui.showToast({ message: t('已添加到收藏') });
 		}
 	}
 }

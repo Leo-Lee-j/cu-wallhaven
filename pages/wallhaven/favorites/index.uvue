@@ -3,19 +3,15 @@
 		<!-- 加载中状态 -->
 		<view class="flex flex-col items-center justify-center h-[450px]" v-if="loading && favorites.length === 0">
 			<cl-loading :size="80"></cl-loading>
-			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">正在加载收藏...</cl-text>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">{{ t('正在加载收藏...') }}</cl-text>
 		</view>
 
 		<!-- 有数据状态 -->
 		<view class="p-2" v-else-if="favorites.length > 0">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
 				<template #item="{ item }">
-					<wallpaper-item
-						:item="item"
-						:show-delete="true"
-						@tap="toDetail(item)"
-						@delete="removeFavorite(item)"
-					></wallpaper-item>
+					<wallpaper-item :item="item" :show-delete="true" @tap="toDetail(item)"
+						@delete="removeFavorite(item)"></wallpaper-item>
 				</template>
 			</cl-waterfall>
 
@@ -25,8 +21,8 @@
 		<!-- 空状态 -->
 		<view class="flex flex-col items-center justify-center h-[450px]" v-else>
 			<cl-icon name="heart-line" :size="120" color="gray"></cl-icon>
-			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">暂无收藏</cl-text>
-			<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">浏览壁纸时点击心形图标添加收藏</cl-text>
+			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">{{ t('暂无收藏') }}</cl-text>
+			<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">{{ t('浏览壁纸时点击心形图标添加收藏') }}</cl-text>
 		</view>
 	</cl-page>
 </template>
@@ -35,6 +31,7 @@
 import { ref, nextTick, onShow } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import { t } from "@/locale";
 import WallpaperItem from "../components/wallpaper-item.uvue";
 
 const ui = useUi();
@@ -92,7 +89,7 @@ async function loadFavorites() {
 		}
 	} catch (err: any) {
 		ui.showToast({
-			message: err.message ?? "加载失败"
+			message: err.message ?? t("加载失败")
 		});
 	} finally {
 		loading.value = false;
@@ -111,8 +108,8 @@ function removeFavorite(item: any) {
 	const id = obj.getString('id') ?? "";
 
 	ui.showConfirm({
-		title: "提示",
-		message: "确定取消收藏吗？",
+		title: t("提示"),
+		message: t("确定取消收藏吗？"),
 		callback(action) {
 			if (action === "confirm") {
 				wallhaven.removeFavorite(id);
@@ -124,7 +121,7 @@ function removeFavorite(item: any) {
 					waterfallRef.value?.remove(id);
 				}
 
-				ui.showToast({ message: "已取消收藏" });
+				ui.showToast({ message: t("已取消收藏") });
 			}
 		}
 	});

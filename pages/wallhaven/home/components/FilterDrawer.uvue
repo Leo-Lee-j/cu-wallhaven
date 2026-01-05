@@ -7,10 +7,10 @@
 				<cl-safe-area type="top"></cl-safe-area>
 				<cl-form :pt="{ className: 'p-3' }">
 					<!-- 分类 -->
-					<cl-form-item label="分类">
+					<cl-form-item :label="t('分类')">
 						<cl-row :gutter="16">
 							<cl-col :span="8">
-								<cl-checkbox v-model="filterForm.categories" label="General" value="general"
+								<cl-checkbox v-model="filterForm.categories" :label="t('综合')" value="general"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -24,7 +24,7 @@
 									}"></cl-checkbox>
 							</cl-col>
 							<cl-col :span="8">
-								<cl-checkbox v-model="filterForm.categories" label="Anime" value="anime"
+								<cl-checkbox v-model="filterForm.categories" :label="t('动漫')" value="anime"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -38,7 +38,7 @@
 									}"></cl-checkbox>
 							</cl-col>
 							<cl-col :span="8">
-								<cl-checkbox v-model="filterForm.categories" label="People" value="people"
+								<cl-checkbox v-model="filterForm.categories" :label="t('人物')" value="people"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -55,23 +55,24 @@
 					</cl-form-item>
 
 					<!-- 内容分级 -->
-					<cl-form-item label="内容分级">
+					<cl-form-item :label="t('内容分级')">
 						<cl-row :gutter="16">
 							<cl-col :span="8">
-								<cl-checkbox v-model="filterForm.purity" label="SFW" value="sfw" :show-icon="false" :pt="{
-									className: parseClass([
-										'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
-										[isDark, 'bg-surface-800', 'bg-surface-100'],
-										[
-											filterForm.purity.includes('sfw'),
-											`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
-										]
-									]),
-									label: { className: 'text-sm' }
-								}"></cl-checkbox>
+								<cl-checkbox v-model="filterForm.purity" :label="t('安全')" value="sfw" :show-icon="false"
+									:pt="{
+										className: parseClass([
+											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
+											[isDark, 'bg-surface-800', 'bg-surface-100'],
+											[
+												filterForm.purity.includes('sfw'),
+												`${isDark ? '!bg-surface-700' : '!bg-white'} !border-primary-500`
+											]
+										]),
+										label: { className: 'text-sm' }
+									}"></cl-checkbox>
 							</cl-col>
 							<cl-col :span="8">
-								<cl-checkbox v-model="filterForm.purity" label="Sketchy" value="sketchy"
+								<cl-checkbox v-model="filterForm.purity" :label="t('轻微')" value="sketchy"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -87,8 +88,9 @@
 							<cl-col :span="8">
 								<!-- NSFW 选项：需要 API Key -->
 								<view class="relative" @tap="onNsfwTap">
-									<cl-checkbox v-model="filterForm.purity" :label="hasApiKey ? 'NSFW' : 'NSFW 🔒'"
-										value="nsfw" :show-icon="false" :disabled="!hasApiKey" :pt="{
+									<cl-checkbox v-model="filterForm.purity"
+										:label="hasApiKey ? t('成人') : t('成人') + ' 🔒'" value="nsfw" :show-icon="false"
+										:disabled="!hasApiKey" :pt="{
 											className: parseClass([
 												'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
 												[isDark, 'bg-surface-800', 'bg-surface-100'],
@@ -106,10 +108,10 @@
 					</cl-form-item>
 
 					<!-- 排序方式 -->
-					<cl-form-item label="排序方式">
+					<cl-form-item :label="t('排序方式')">
 						<cl-row :gutter="16">
 							<cl-col :span="6" v-for="item in sortingOptions" :key="item.value">
-								<cl-radio v-model="filterForm.sorting" :label="item.label" :value="item.value"
+								<cl-radio v-model="filterForm.sorting" :label="t(item.label)" :value="item.value"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -126,10 +128,10 @@
 					</cl-form-item>
 
 					<!-- 热门时间范围 -->
-					<cl-form-item label="热门时间范围" v-if="filterForm.sorting == 'toplist'">
+					<cl-form-item :label="t('热门时间范围')" v-if="filterForm.sorting == 'toplist'">
 						<cl-row :gutter="16">
 							<cl-col :span="6" v-for="item in topRangeOptions" :key="item.value">
-								<cl-radio v-model="filterForm.topRange" :label="item.label" :value="item.value"
+								<cl-radio v-model="filterForm.topRange" :label="t(item.label)" :value="item.value"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -146,11 +148,11 @@
 					</cl-form-item>
 
 					<!-- 壁纸类型 -->
-					<cl-form-item label="壁纸类型">
+					<cl-form-item :label="t('壁纸类型')">
 						<cl-row :gutter="16">
 							<cl-col :span="8">
-								<cl-radio v-model="filterForm.wallpaperType" label="全部" value="all" :show-icon="false"
-									:pt="{
+								<cl-radio v-model="filterForm.wallpaperType" :label="t('全部')" value="all"
+									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
 											[isDark, 'bg-surface-800', 'bg-surface-100'],
@@ -163,8 +165,8 @@
 									}"></cl-radio>
 							</cl-col>
 							<cl-col :span="8">
-								<cl-radio v-model="filterForm.wallpaperType" label="PC壁纸" value="pc" :show-icon="false"
-									:pt="{
+								<cl-radio v-model="filterForm.wallpaperType" :label="t('PC壁纸')" value="pc"
+									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
 											[isDark, 'bg-surface-800', 'bg-surface-100'],
@@ -177,7 +179,7 @@
 									}"></cl-radio>
 							</cl-col>
 							<cl-col :span="8">
-								<cl-radio v-model="filterForm.wallpaperType" label="手机壁纸" value="mobile"
+								<cl-radio v-model="filterForm.wallpaperType" :label="t('手机壁纸')" value="mobile"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -194,7 +196,7 @@
 					</cl-form-item>
 
 					<!-- 颜色筛选 -->
-					<cl-form-item label="颜色筛选">
+					<cl-form-item :label="t('颜色筛选')">
 						<cl-row :gutter="12">
 							<cl-col :span="4" v-for="color in colorOptions" :key="color.value">
 								<view class="color-item mb-3 rounded-lg border-2 border-solid" :class="[
@@ -208,10 +210,10 @@
 					</cl-form-item>
 
 					<!-- 宽高比 -->
-					<cl-form-item label="宽高比">
+					<cl-form-item :label="t('宽高比')">
 						<cl-row :gutter="16">
 							<cl-col :span="6" v-for="item in ratioOptions" :key="item.value">
-								<cl-checkbox v-model="filterForm.ratios" :label="item.label" :value="item.value"
+								<cl-checkbox v-model="filterForm.ratios" :label="t(item.label)" :value="item.value"
 									:show-icon="false" :pt="{
 										className: parseClass([
 											'mb-3 p-2 rounded-lg justify-center border border-solid border-transparent',
@@ -231,9 +233,9 @@
 
 			<!-- 底部按钮 -->
 			<view class="flex flex-row p-3 border-t border-surface-100 dark:!border-surface-700">
-				<cl-button type="info" text :pt="{ className: 'flex-1 mr-2' }" @tap="resetFilter">重置
+				<cl-button type="info" text :pt="{ className: 'flex-1 mr-2' }" @tap="resetFilter">{{ t('重置') }}
 				</cl-button>
-				<cl-button :pt="{ className: 'flex-1' }" @tap="applyFilter">确定
+				<cl-button :pt="{ className: 'flex-1' }" @tap="applyFilter">{{ t('确定') }}
 				</cl-button>
 			</view>
 
@@ -246,6 +248,7 @@
 import { ref, reactive, computed, onMounted } from "vue";
 import { useStore, isDark, parseClass } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import { t } from "@/locale";
 import type { FilterForm } from "@/types/wallhaven";
 import {
 	SORTING_OPTIONS,
@@ -325,7 +328,7 @@ function onUpdateVisible(val: boolean) {
 function onNsfwTap() {
 	if (!hasApiKey.value) {
 		ui.showToast({
-			message: '需要配置 API Key 才能启用 NSFW 内容'
+			message: t('需要配置 API Key 才能启用 NSFW 内容')
 		});
 	}
 }

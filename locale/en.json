@@ -146,5 +146,321 @@
   [
     "发送短信",
     "Send SMS"
+  ],
+  [
+    "搜索壁纸...",
+    "Search wallpapers..."
+  ],
+  [
+    "暂无搜索结果",
+    "No results found"
+  ],
+  [
+    "换个关键词或调整筛选条件试试",
+    "Try different keywords or adjust filters"
+  ],
+  [
+    "已取消收藏",
+    "Removed from favorites"
+  ],
+  [
+    "已添加到收藏",
+    "Added to favorites"
+  ],
+  [
+    "已收藏",
+    "Favorited"
+  ],
+  [
+    "搜索历史",
+    "Search History"
+  ],
+  [
+    "清空",
+    "Clear"
+  ],
+  [
+    "暂无搜索历史",
+    "No search history"
+  ],
+  [
+    "输入关键词搜索壁纸",
+    "Enter keywords to search wallpapers"
+  ],
+  [
+    "已保存到相册",
+    "Saved to album"
+  ],
+  [
+    "下载失败",
+    "Download failed"
+  ],
+  [
+    "加载失败",
+    "Load failed"
+  ],
+  [
+    "分辨率",
+    "Resolution"
+  ],
+  [
+    "分类",
+    "Category"
+  ],
+  [
+    "内容分级",
+    "Purity"
+  ],
+  [
+    "浏览量",
+    "Views"
+  ],
+  [
+    "收藏数",
+    "Favorites"
+  ],
+  [
+    "文件大小",
+    "File Size"
+  ],
+  [
+    "文件类型",
+    "File Type"
+  ],
+  [
+    "上传者",
+    "Uploader"
+  ],
+  [
+    "上传时间",
+    "Upload Time"
+  ],
+  [
+    "标签",
+    "Tags"
+  ],
+  [
+    "主要颜色",
+    "Primary Colors"
+  ],
+  [
+    "下载",
+    "Download"
+  ],
+  [
+    "收起",
+    "Collapse"
+  ],
+  [
+    "详情",
+    "Details"
+  ],
+  [
+    "综合",
+    "General"
+  ],
+  [
+    "动漫",
+    "Anime"
+  ],
+  [
+    "人物",
+    "People"
+  ],
+  [
+    "安全",
+    "SFW"
+  ],
+  [
+    "轻微",
+    "Sketchy"
+  ],
+  [
+    "成人",
+    "NSFW"
+  ],
+  [
+    "未设置用户名",
+    "Username not set"
+  ],
+  [
+    "API Key 已配置",
+    "API Key configured"
+  ],
+  [
+    "收藏",
+    "Favorites"
+  ],
+  [
+    "更多",
+    "More"
+  ],
+  [
+    "排序方式",
+    "Sorting"
+  ],
+  [
+    "热门时间范围",
+    "Timeframe"
+  ],
+  [
+    "壁纸类型",
+    "Type"
+  ],
+  [
+    "全部",
+    "All"
+  ],
+  [
+    "PC壁纸",
+    "Desktop"
+  ],
+  [
+    "手机壁纸",
+    "Mobile"
+  ],
+  [
+    "颜色筛选",
+    "Colors"
+  ],
+  [
+    "宽高比",
+    "Aspect Ratios"
+  ],
+  [
+    "重置",
+    "Reset"
+  ],
+  [
+    "需要配置 API Key 才能启用 NSFW 内容",
+    "API Key required to enable NSFW content"
+  ],
+  [
+    "最新",
+    "Latest"
+  ],
+  [
+    "相关",
+    "Relevance"
+  ],
+  [
+    "随机",
+    "Random"
+  ],
+  [
+    "浏览",
+    "Views"
+  ],
+  [
+    "热门",
+    "Toplist"
+  ],
+  [
+    "1天",
+    "1 Day"
+  ],
+  [
+    "3天",
+    "3 Days"
+  ],
+  [
+    "1周",
+    "1 Week"
+  ],
+  [
+    "1月",
+    "1 Month"
+  ],
+  [
+    "3月",
+    "3 Months"
+  ],
+  [
+    "6月",
+    "6 Months"
+  ],
+  [
+    "1年",
+    "1 Year"
+  ],
+  [
+    "张壁纸",
+    "Wallpapers"
+  ],
+  [
+    "加载中...",
+    "Loading..."
+  ],
+  [
+    "正在加载收藏...",
+    "Loading favorites..."
+  ],
+  [
+    "需要配置 API Key",
+    "API Key required"
+  ],
+  [
+    "请在设置中配置 Wallhaven API Key",
+    "Please configure Wallhaven API Key in settings"
+  ],
+  [
+    "去设置",
+    "Settings"
+  ],
+  [
+    "暂无收藏夹",
+    "No collections"
+  ],
+  [
+    "请先设置用户名",
+    "Please set username first"
+  ],
+  [
+    "暂无收藏",
+    "No favorites"
+  ],
+  [
+    "浏览壁纸时点击心形图标添加收藏",
+    "Tap the heart icon when viewing wallpapers to add to favorites"
+  ],
+  [
+    "提示",
+    "Tip"
+  ],
+  [
+    "确定取消收藏吗？",
+    "Are you sure you want to remove from favorites?"
+  ],
+  [
+    "壁纸浏览器",
+    "Wallpaper Browser"
+  ],
+  [
+    "版本",
+    "Version"
+  ],
+  [
+    "框架",
+    "Framework"
+  ],
+  [
+    "本应用基于 Wallhaven API 开发，提供高质量壁纸浏览和下载功能。",
+    "This app is developed based on Wallhaven API, providing high-quality wallpaper browsing and downloading functions."
+  ],
+  [
+    "Wallhaven 是一个免费的壁纸分享社区，拥有大量高质量的壁纸资源。",
+    "Wallhaven is a free wallpaper sharing community with a large amount of high-quality wallpaper resources."
+  ],
+  [
+    "所有壁纸版权归原作者所有。",
+    "All wallpaper copyrights belong to the original authors."
+  ],
+  [
+    "访问 Wallhaven",
+    "Visit Wallhaven"
+  ],
+  [
+    "链接已复制",
+    "Link copied"
   ]
 ]

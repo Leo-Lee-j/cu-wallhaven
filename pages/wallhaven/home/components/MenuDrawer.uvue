@@ -7,31 +7,31 @@
 				<cl-avatar :size="140" src="/static/wallhaven-logo.png"
 					:pt="{ className: 'border-4 border-white/20' }"></cl-avatar>
 				<cl-text :pt="{ className: 'mt-4 text-white text-lg font-bold' }">
-					{{ store.username.value !== "" ? store.username.value : "未设置用户名" }}
+					{{ store.username.value !== "" ? store.username.value : t('未设置用户名') }}
 				</cl-text>
 				<cl-text v-if="store.apiKey.value" :pt="{ className: 'mt-1 text-white/70 text-xs' }">
-					API Key 已配置
+					{{ t('API Key 已配置') }}
 				</cl-text>
 			</view>
 
 			<!-- 菜单列表 -->
 			<scroll-view direction="vertical" class="flex-1 py-3">
 				<view class="px-3">
-					<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">收藏</cl-text>
+					<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">{{ t('收藏') }}</cl-text>
 					<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
-						<cl-list-item label="在线收藏夹" icon="cloud-line" arrow hoverable @tap="toCollections"
+						<cl-list-item :label="t('在线收藏夹')" icon="cloud-line" arrow hoverable @tap="toCollections"
 							:pt="{ icon: { color: '#6366f1' } }"></cl-list-item>
-						<cl-list-item label="本地收藏夹" icon="heart-line" arrow hoverable @tap="toFavorites"
+						<cl-list-item :label="t('本地收藏')" icon="heart-line" arrow hoverable @tap="toFavorites"
 							:pt="{ icon: { color: '#ef4444' } }"></cl-list-item>
 					</view>
 				</view>
 
 				<view class="px-3 mt-4">
-					<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">更多</cl-text>
+					<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">{{ t('更多') }}</cl-text>
 					<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
-						<cl-list-item label="设置" icon="settings-line" arrow hoverable @tap="toSettings"
+						<cl-list-item :label="t('设置')" icon="settings-line" arrow hoverable @tap="toSettings"
 							:pt="{ icon: { color: '#8b5cf6' } }"></cl-list-item>
-						<cl-list-item label="关于" icon="at-line" arrow hoverable @tap="toAbout"
+						<cl-list-item :label="t('关于')" icon="at-line" arrow hoverable @tap="toAbout"
 							:pt="{ icon: { color: '#06b6d4' } }"></cl-list-item>
 					</view>
 				</view>
@@ -44,6 +44,7 @@
 
 <script lang="ts" setup>
 import { router, useStore } from "@/cool";
+import { t } from "@/locale";
 
 const { wallhaven } = useStore();
 const store = wallhaven;

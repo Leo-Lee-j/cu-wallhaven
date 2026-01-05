@@ -5,36 +5,25 @@
 			<!-- 有搜索历史 -->
 			<view v-if="hasSearchHistory">
 				<view class="flex flex-row items-center justify-between mb-3">
-					<cl-text :pt="{ className: 'text-sm text-surface-500' }">搜索历史</cl-text>
-					<cl-text
-						:pt="{ className: 'text-sm text-primary-500' }"
-						@tap="clearSearchHistory"
-					>清空
+					<cl-text :pt="{ className: 'text-sm text-surface-500' }">{{ t('搜索历史') }}</cl-text>
+					<cl-text :pt="{ className: 'text-sm text-primary-500' }" @tap="clearSearchHistory">{{ t('清空') }}
 					</cl-text>
 				</view>
 				<view class="flex flex-row flex-wrap">
-					<view
-						v-for="(item, index) in store.searchHistory.value"
-						:key="index"
+					<view v-for="(item, index) in store.searchHistory.value" :key="index"
 						class="history-tag bg-surface-100 dark:!bg-surface-700 rounded-full px-4 py-2 mr-2 mb-2 flex flex-row items-center"
-						@tap="onHistoryClick(item)"
-					>
+						@tap="onHistoryClick(item)">
 						<cl-text :pt="{ className: 'text-sm' }">{{ item }}</cl-text>
-						<cl-icon
-							name="close-line"
-							:size="28"
-							color="gray"
-							class="ml-1"
-							@tap.stop="removeHistory(item)"
-						></cl-icon>
+						<cl-icon name="close-line" :size="28" color="gray" class="ml-1"
+							@tap.stop="removeHistory(item)"></cl-icon>
 					</view>
 				</view>
 			</view>
 			<!-- 无搜索历史 -->
 			<view v-else class="flex flex-col items-center justify-center py-20">
 				<cl-icon name="search-line" :size="80" color="gray"></cl-icon>
-				<cl-text :pt="{ className: 'text-surface-400 mt-4' }">暂无搜索历史</cl-text>
-				<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">输入关键词搜索壁纸</cl-text>
+				<cl-text :pt="{ className: 'text-surface-400 mt-4' }">{{ t('暂无搜索历史') }}</cl-text>
+				<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">{{ t('输入关键词搜索壁纸') }}</cl-text>
 			</view>
 		</view>
 	</view>
@@ -43,6 +32,7 @@
 <script lang="ts" setup>
 import { computed } from "vue";
 import { useStore } from "@/cool";
+import { t } from "@/locale";
 
 const { wallhaven } = useStore();
 const store = wallhaven;
