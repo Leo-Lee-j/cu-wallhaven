@@ -7,16 +7,16 @@
 
 			<!-- 收藏按钮 (右上角) -->
 			<view
-				class="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center z-10"
+				class="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/10 backdrop-blur-sm flex items-center justify-center z-10"
 				@tap.stop="toggleFavorite">
 				<cl-icon :name="isFavorited ? 'heart-fill' : 'heart-line'" :size="36"
-					:color="isFavorited ? '#ef4444' : '#ffffff'"></cl-icon>
+					:color="isFavorited ? '#ef4444' : 'rgba(255, 255, 255, 0.6)'"></cl-icon>
 			</view>
 
 			<!-- 分辨率 (左下角) -->
 			<view
-				class="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/30 backdrop-blur-sm flex items-center justify-center pointer-events-none">
-				<text class="text-xs text-white font-medium">{{ getResolution(item) }}</text>
+				class="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/10 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+				<text class="text-xs text-white opacity-60 font-medium">{{ getResolution(item) }}</text>
 			</view>
 
 			<!-- 删除按钮 (仅当 showDelete 为 true 时显示，原有逻辑) -->
