@@ -1,27 +1,30 @@
 <template>
-	<view class="wallpaper-item bg-white dark:!bg-surface-800 rounded-xl overflow-hidden mb-3"
+	<view
+		class="wallpaper-item bg-white dark:bg-gray-800 overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700"
 		:class="{ 'is-visible': visible }" @tap="click">
-		<image :src="getThumbnail(item)" mode="widthFix" class="w-full" :lazy-load="true"></image>
+		<view class="relative">
+			<image :src="getThumbnail(item)" mode="widthFix" class="w-full" :lazy-load="true"></image>
 
-		<view class="p-2 flex flex-row items-center justify-between">
-			<cl-tag size="small" type="info" :plain="true">
-				{{ getResolution(item) }}
-			</cl-tag>
-
-			<view class="flex flex-row items-center px-2 py-1 -mr-2" @tap.stop="toggleFavorite">
-				<cl-icon :name="isFavorited ? 'heart-fill' : 'heart-line'" :size="32"
-					:color="isFavorited ? '#ef4444' : 'gray'"></cl-icon>
-				<cl-text :pt="{ className: 'text-sm text-surface-400 ml-1' }">
-					{{ getFavorites(item) }}
-				</cl-text>
+			<!-- 收藏按钮 (右上角) -->
+			<view
+				class="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center z-10"
+				@tap.stop="toggleFavorite">
+				<cl-icon :name="isFavorited ? 'heart-fill' : 'heart-line'" :size="36"
+					:color="isFavorited ? '#ef4444' : '#ffffff'"></cl-icon>
 			</view>
-		</view>
 
-		<!-- 删除按钮 -->
-		<view v-if="showDelete"
-			class="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center z-10"
-			@tap.stop="onDelete">
-			<cl-icon name="heart-fill" :size="28" color="#ef4444"></cl-icon>
+			<!-- 分辨率 (左下角) -->
+			<view
+				class="absolute bottom-2 left-2 px-2 py-1 rounded bg-black/30 backdrop-blur-sm flex items-center justify-center pointer-events-none">
+				<text class="text-xs text-white font-medium">{{ getResolution(item) }}</text>
+			</view>
+
+			<!-- 删除按钮 (仅当 showDelete 为 true 时显示，原有逻辑) -->
+			<view v-if="showDelete"
+				class="absolute top-2 left-2 h-7 w-7 rounded-full bg-black/50 flex items-center justify-center z-10"
+				@tap.stop="onDelete">
+				<cl-icon name="close-line" :size="28" color="#ffffff"></cl-icon>
+			</view>
 		</view>
 	</view>
 </template>
@@ -110,15 +113,7 @@ function getResolution(item: any): string {
 	return "";
 }
 
-// 辅助函数:获取收藏数
-function getFavorites(item: any): string {
-	const obj = item as UTSJSONObject | null;
-	if (obj != null) {
-		const num = obj.getNumber('favorites');
-		return num != null ? num.toString() : "0";
-	}
-	return "0";
-}
+
 </script>
 
 <style scoped>

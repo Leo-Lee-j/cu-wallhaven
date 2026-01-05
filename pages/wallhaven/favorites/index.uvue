@@ -7,8 +7,8 @@
 		</view>
 
 		<!-- 有数据状态 -->
-		<view class="p-2" v-else-if="favorites.length > 0">
-			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+		<view v-else-if="favorites.length > 0">
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="0">
 				<template #item="{ item }">
 					<wallpaper-item :item="item" :show-delete="true" @tap="toDetail(item)"
 						@delete="removeFavorite(item)"></wallpaper-item>

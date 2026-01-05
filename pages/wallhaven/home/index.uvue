@@ -45,8 +45,8 @@
 			@close="showSearchHistory = false"></search-history>
 
 		<!-- 壁纸列表（带过渡动画） -->
-		<view v-show="!showSearchHistory" class="wallpaper-container p-2">
-			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+		<view v-show="!showSearchHistory" class="wallpaper-container">
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="0">
 				<template #item="{ item }">
 					<wallpaper-item :item="item" :favorited="isFavorited(item)" @tap="toDetail(item)"
 						@favorite="onFavorite"></wallpaper-item>
