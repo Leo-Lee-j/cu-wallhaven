@@ -14,9 +14,8 @@
 
 				<!-- 中间搜索框 -->
 				<view class="flex-1 mx-3" @tap="onSearchFocus">
-					<cl-input v-model="searchKeyword" placeholder="搜索壁纸..." prefix-icon="search-line" clearable :pt="{
-						className: 'rounded-full'
-					}" @confirm="onSearch"></cl-input>
+					<cl-input v-model="searchKeyword" placeholder="搜索壁纸..." prefix-icon="search-line" clearable
+						:pt="{ className: 'rounded-full' }" @confirm="onSearch"></cl-input>
 				</view>
 
 				<!-- 右侧按钮：搜索模式下显示取消，正常模式显示刷新和筛选 -->
@@ -310,3 +309,8 @@ onMounted(() => {
 	refreshList();
 });
 </script>
+
+<style scoped>
+/* 搜索输入框 placeholder 样式 */
+/* 移除不支持的样式，改用 placeholder-style 属性来控制 placeholder 文本大小 */
+</style>
