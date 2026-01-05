@@ -1,9 +1,10 @@
 <template>
 	<cl-popup :model-value="visible" direction="right" size="80%" :enable-portal="false" safe-area-top @touchmove.stop
-		@update:model-value="onUpdateVisible" title="筛选">
+		@update:model-value="onUpdateVisible" :show-header="false">
 		<view class="flex flex-col h-full">
 			<!-- 中间滚动区域 - 使用绝对定位并设置上下边距 -->
-			<scroll-view scroll-y @touchmove.stop class="flex-1">
+			<scroll-view direction="vertical" @touchmove.stop class="flex-1">
+				<cl-safe-area type="top"></cl-safe-area>
 				<cl-form :pt="{ className: 'p-3' }">
 					<!-- 分类 -->
 					<cl-form-item label="分类">
@@ -125,7 +126,7 @@
 					</cl-form-item>
 
 					<!-- 热门时间范围 -->
-					<cl-form-item label="热门时间范围" v-if="filterForm.sorting === 'toplist'">
+					<cl-form-item label="热门时间范围" v-if="filterForm.sorting == 'toplist'">
 						<cl-row :gutter="16">
 							<cl-col :span="6" v-for="item in topRangeOptions" :key="item.value">
 								<cl-radio v-model="filterForm.topRange" :label="item.label" :value="item.value"
@@ -290,7 +291,33 @@ const topRangeOptions = ref<OptionItem[]>(TOP_RANGE_OPTIONS);
 const ratioOptions = ref<OptionItem[]>(RATIO_OPTIONS);
 const colorOptions = ref<ColorOption[]>(COLOR_OPTIONS);
 
+// 从 store 同步筛选表单数据
+function syncFilterFormFromStore() {
+	const storeForm = store.filterForm.value;
+
+	// 直接复制，UTS 类型系统保证这些属性存在
+	if (Array.isArray(storeForm.categories)) {
+		filterForm.categories = [...storeForm.categories];
+	}
+	if (Array.isArray(storeForm.purity)) {
+		filterForm.purity = [...storeForm.purity];
+	}
+	filterForm.sorting = storeForm.sorting;
+	filterForm.topRange = storeForm.topRange;
+	if (Array.isArray(storeForm.ratios)) {
+		filterForm.ratios = [...storeForm.ratios];
+	}
+	filterForm.wallpaperType = storeForm.wallpaperType;
+	if (Array.isArray(storeForm.colors)) {
+		filterForm.colors = [...storeForm.colors];
+	}
+}
+
 function onUpdateVisible(val: boolean) {
+	// 抽屉打开时，从 store 同步最新数据
+	if (val) {
+		syncFilterFormFromStore();
+	}
 	emit("update:visible", val);
 }
 
@@ -322,27 +349,6 @@ function resetFilter() {
 	filterForm.ratios = [];
 	filterForm.wallpaperType = "all";
 	filterForm.colors = [];
-}
-
-// 从 store 同步筛选表单数据
-function syncFilterFormFromStore() {
-	const storeForm = store.filterForm.value;
-	// 直接复制，UTS 类型系统保证这些属性存在
-	if (Array.isArray(storeForm.categories)) {
-		filterForm.categories = [...storeForm.categories];
-	}
-	if (Array.isArray(storeForm.purity)) {
-		filterForm.purity = [...storeForm.purity];
-	}
-	filterForm.sorting = storeForm.sorting;
-	filterForm.topRange = storeForm.topRange;
-	if (Array.isArray(storeForm.ratios)) {
-		filterForm.ratios = [...storeForm.ratios];
-	}
-	filterForm.wallpaperType = storeForm.wallpaperType;
-	if (Array.isArray(storeForm.colors)) {
-		filterForm.colors = [...storeForm.colors];
-	}
 }
 
 // 应用筛选

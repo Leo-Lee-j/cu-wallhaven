@@ -15,7 +15,7 @@
 			</view>
 
 			<!-- 菜单列表 -->
-			<scroll-view scroll-y class="flex-1 py-3">
+			<scroll-view direction="vertical" class="flex-1 py-3">
 				<view class="px-3">
 					<cl-text :pt="{ className: 'text-xs text-surface-400 px-3 mb-2' }">收藏</cl-text>
 					<view class="bg-white dark:!bg-surface-800 rounded-xl overflow-hidden">
