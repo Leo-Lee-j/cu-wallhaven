@@ -43,6 +43,12 @@ export class WallhavenStore {
 		colors: []
 	});
 
+	// 当前选中的壁纸（用于详情页缓存）
+	currentWallpaper = ref<UTSJSONObject | null>(null);
+
+	// 壁纸列表（用于详情页的 swiper 滑动）
+	wallpapers = ref<UTSJSONObject[]>([]);
+
 	constructor() {
 		this.load();
 	}
@@ -234,6 +240,14 @@ export class WallhavenStore {
 	setFilterForm(form: FilterForm) {
 		this.filterForm.value = form;
 		storage.set("wallhaven_filterForm", form, 0);
+	}
+
+	/**
+	 * 设置当前壁纸和壁纸列表（用于详情页）
+	 */
+	setCurrentWallpaper(wallpaper: UTSJSONObject | null, wallpaperList: UTSJSONObject[] = []) {
+		this.currentWallpaper.value = wallpaper;
+		this.wallpapers.value = wallpaperList;
 	}
 
 	/**

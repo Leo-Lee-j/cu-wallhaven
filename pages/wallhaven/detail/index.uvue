@@ -25,14 +25,30 @@
 			</view>
 
 			<!-- 图片 -->
-			<image v-if="wallpaper" :src="wallpaper?.getString('path') ?? ''" mode="aspectFit"
-				class="w-full h-full transition-opacity duration-300"
-				:class="{ 'opacity-0': !imageLoaded, 'opacity-100': imageLoaded }" @tap="toggleFullscreen"
-				@load="onImageLoad" :show-menu-by-longpress="true"></image>
+			<!-- 图片区域 Swiper -->
+			<swiper class="w-full h-full" :current="currentIndex" @change="onSwiperChange" :indicator-dots="false"
+				:duration="300" v-if="isReady">
+				<swiper-item v-for="(item, index) in wallpaperList" :key="item?.getString('id') ?? index">
+					<view class="w-full h-full flex items-center justify-center bg-black relative">
+						<cl-image :src="item?.getString('path') ?? ''" mode="aspectFit" width="100%" height="100%"
+							:show-loading="false" :preview="false" :pt="{ inner: { className: '!rounded-none' } }"
+							class="w-full h-full" @load="onImageLoad(item?.getString('id') ?? '')"
+							@tap="onPreviewWallpaper">
+						</cl-image>
+
+						<!-- 自定义加载遮罩 -->
+						<view
+							class="absolute top-0 left-0 right-0 bottom-0 bg-black flex items-center justify-center transition-opacity duration-300 pointer-events-none"
+							:class="loadedMap.has(item?.getString('id') ?? '') ? 'opacity-0' : 'opacity-100'">
+							<cl-loading :size="40" color="#ffffff"></cl-loading>
+						</view>
+					</view>
+				</swiper-item>
+			</swiper>
 		</view>
 
 		<!-- 底部操作栏 - 毛玻璃效果 -->
-		<view class="detail-footer" :class="{ 'footer-visible': imageLoaded && !isFullscreen }" v-if="!isFullscreen">
+		<view class="detail-footer" :class="{ 'footer-visible': imageLoaded }">
 			<!-- 使用 cl-collapse 实现折叠效果 -->
 			<cl-collapse v-model="detailVisible">
 				<!-- 折叠详情区域（可滚动） -->
@@ -136,19 +152,21 @@ const wallpaper = ref<UTSJSONObject | null>(null);
 // 壁纸ID
 const wallpaperId = ref("");
 
+// 记录加载完成的图片ID
+const loadedMap = ref(new Set<string>());
+
 // 图片是否加载完成
-const imageLoaded = ref(false);
+const imageLoaded = computed((): boolean => {
+	return loadedMap.value.has(wallpaperId.value);
+});
 
 // loading状态
-const isLoading = computed((): boolean => {
-	return !imageLoaded.value || wallpaper.value == null;
-});
+const isLoading = ref(true);
 
 // 详情折叠状态
 const detailVisible = ref(false);
 
-// 全屏模式
-const isFullscreen = ref(false);
+
 
 // 下载中
 const downloading = ref(false);
@@ -163,10 +181,7 @@ function toggleDetail() {
 	detailVisible.value = !detailVisible.value;
 }
 
-// 切换全屏
-function toggleFullscreen() {
-	isFullscreen.value = !isFullscreen.value;
-}
+
 
 // 切换收藏
 function toggleFavorite() {
@@ -179,9 +194,24 @@ function toggleFavorite() {
 	}
 }
 
+// 壁纸列表
+const wallpaperList = ref<UTSJSONObject[]>([]);
+// 当前索引
+const currentIndex = ref(0);
+
 // 图片加载完成
-function onImageLoad() {
-	imageLoaded.value = true;
+function onImageLoad(id: string) {
+	loadedMap.value.add(id);
+}
+
+// 切换 Swiper
+function onSwiperChange(e: UniSwiperChangeEvent) {
+	const current = e.detail.current;
+	currentIndex.value = current;
+	if (wallpaperList.value.length > current) {
+		wallpaper.value = wallpaperList.value[current];
+		wallpaperId.value = wallpaper.value?.getString('id') ?? '';
+	}
 }
 
 // 定义下载错误类型
@@ -280,27 +310,108 @@ function formatFileSize(bytes: number): string {
 	return (bytes / (1024 * 1024)).toFixed(1) + " MB";
 }
 
+// Swiper是否准备就绪
+const isReady = ref(false);
+
 // 加载壁纸详情
 async function loadWallpaper() {
+	// 检查缓存
+	const cache = wallhaven.currentWallpaper.value;
+
+	// 初始化列表
+	const storeList = wallhaven.wallpapers.value;
+	if (storeList.length > 0) {
+		// 查找当前索引
+		const index = storeList.findIndex((w) => w.getString('id') === wallpaperId.value);
+		if (index > -1) {
+			currentIndex.value = index;
+			wallpaperList.value = storeList;
+			// 即使有列表，也优先使用 cache 或 storeList 中的对象更新当前 wallpaper
+			wallpaper.value = storeList[index];
+			console.log(`[detail] 从列表加载，索引: ${index}`);
+			isLoading.value = false;
+			isReady.value = true;
+			return;
+		} else {
+			wallpaperList.value = storeList;
+			currentIndex.value = 0;
+			isReady.value = true;
+		}
+	} else {
+		// 如果没有列表缓存（如直接进入），初始化包含单个的列表
+		if (cache != null && cache?.getString("id") === wallpaperId.value) {
+			wallpaper.value = cache;
+			wallpaperList.value = [cache];
+			currentIndex.value = 0;
+			isLoading.value = false;
+			isReady.value = true;
+			return;
+		}
+	}
+
+	// 如果没有缓存或列表中没找到，尝试通过网络加载
+	if (cache != null && cache?.getString("id") === wallpaperId.value) {
+		console.log(`[detail] 使用缓存壁纸: ${wallpaperId.value}`);
+		wallpaper.value = cache;
+		if (wallpaperList.value.length === 0) {
+			currentIndex.value = 0;
+			wallpaperList.value = [cache];
+		}
+		isLoading.value = false;
+		isReady.value = true;
+		return;
+	}
+
 	try {
+		console.log(`[detail] 正在请求壁纸详情: ${wallpaperId.value}`);
 		const result = await wallhaven.getWallpaper(wallpaperId.value);
-		wallpaper.value = result as UTSJSONObject;
+		console.log(`[detail] 请求成功:`, result);
+		const wp = result as UTSJSONObject;
+		wallpaper.value = wp;
+		if (wallpaperList.value.length === 0) {
+			wallpaperList.value = [wp];
+			currentIndex.value = 0; // 单张默认0
+		}
+		isReady.value = true;
 	} catch (err: any) {
+		console.error(`[detail] 请求失败:`, err);
 		ui.showToast({
 			message: err.message ?? t("加载失败")
 		});
+	} finally {
+		isLoading.value = false;
+		// 确保即使失败也显示（可能空白或错误提示），或者至少不让swiper报错?
+		// 如果失败，wallpaperList可能为空。
+		if (wallpaperList.value.length > 0) isReady.value = true;
 	}
 }
 
 // 页面加载
 onLoad((options?: UTSJSONObject) => {
+	console.log("[detail] onLoad options:", options);
 	if (options == null) return;
 	const id = options?.["id"] as string | null;
+	console.log("[detail] 解析到的 id:", id);
 	if (id != null && id !== '') {
 		wallpaperId.value = id;
 		loadWallpaper();
+	} else {
+		console.error("[detail] 未获取到有效 id");
 	}
 });
+
+// 预览壁纸（查看大图）
+function onPreviewWallpaper() {
+	if (wallpaper.value == null) return;
+	const currentPath = wallpaper.value?.getString('path') ?? '';
+	if (currentPath === '') return;
+
+	uni.previewImage({
+		urls: [currentPath],
+		current: 0,
+		indicator: "none"
+	});
+}
 </script>
 
 <style lang="scss" scoped>
