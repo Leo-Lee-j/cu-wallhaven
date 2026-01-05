@@ -1,19 +1,11 @@
 <template>
-	<cl-page
-		:back-top="true"
-		:lower-threshold="300"
-		@scrolltolower="loadData"
-	>
+	<cl-page :back-top="true" :lower-threshold="300" @scrolltolower="loadData">
 		<!-- 顶部导航栏 -->
-		<cl-topbar
-			fixed
-			safe-area-top
-			:pt="{
-				back: {
-					color: 'black'
-				}
-			}"
-		>
+		<cl-topbar fixed safe-area-top :pt="{
+			back: {
+				color: 'black'
+			}
+		}">
 			<view class="flex flex-row items-center justify-center p-3 w-full">
 				<!-- 收藏夹标题 -->
 				<view class="flex flex-col items-center">
@@ -26,8 +18,8 @@
 		</cl-topbar>
 
 		<!-- 壁纸列表 -->
-		<view class="wallpaper-container p-2">
-			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+		<view class="wallpaper-container">
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="0">
 				<template #item="{ item }">
 					<wallpaper-item :item="item" @tap="toDetail(item)"></wallpaper-item>
 				</template>
@@ -37,36 +29,24 @@
 		</view>
 
 		<!-- 加载中状态 -->
-		<view
-			class="flex flex-col items-center justify-center h-[450px]"
-			v-if="wallpapers.length === 0 && loading"
-		>
+		<view class="flex flex-col items-center justify-center h-[450px]" v-if="wallpapers.length === 0 && loading">
 			<cl-loading></cl-loading>
 			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">加载中...</cl-text>
 		</view>
 
 		<!-- 空状态 -->
-		<view
-			class="flex flex-col items-center justify-center h-[450px]"
-			v-if="wallpapers.length === 0 && !loading && error === ''"
-		>
+		<view class="flex flex-col items-center justify-center h-[450px]"
+			v-if="wallpapers.length === 0 && !loading && error === ''">
 			<cl-icon name="image-line" :size="120" color="gray"></cl-icon>
 			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">收藏夹是空的</cl-text>
 		</view>
 
 		<!-- 错误状态 -->
-		<view
-			class="flex flex-col items-center justify-center h-[450px]"
-			v-if="error"
-		>
+		<view class="flex flex-col items-center justify-center h-[450px]" v-if="error">
 			<cl-icon name="error-warning-line" :size="120" color="gray"></cl-icon>
 			<cl-text :pt="{ className: 'text-surface-400 mt-4' }">加载失败</cl-text>
 			<cl-text :pt="{ className: 'text-surface-300 text-sm mt-2' }">{{ error }}</cl-text>
-			<cl-button
-				type="primary"
-				:pt="{ className: 'mt-4' }"
-				@tap="retry"
-			>重试</cl-button>
+			<cl-button type="primary" :pt="{ className: 'mt-4' }" @tap="retry">重试</cl-button>
 		</view>
 	</cl-page>
 </template>
@@ -191,4 +171,3 @@ onLoad((options) => {
 	loadData();
 });
 </script>
-

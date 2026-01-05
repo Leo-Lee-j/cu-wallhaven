@@ -1,43 +1,42 @@
 <template>
 	<cl-page>
 		<view class="p-4">
+			<!-- 语言选择 -->
+			<view class="mb-6">
+				<cl-text :pt="{ className: 'text-sm font-bold mb-2' }">{{ t('语言') }}</cl-text>
+				<cl-list>
+					<cl-list-item v-for="lang in languages" :key="lang.value" :label="lang.label"
+						@tap="changeLocale(lang.value)">
+						<cl-icon v-if="currentLocale == lang.value" name="verified-badge-line" :size="40"
+							color="primary"></cl-icon>
+					</cl-list-item>
+				</cl-list>
+			</view>
+
 			<!-- API Key 输入 -->
 			<view class="mb-6">
 				<cl-text :pt="{ className: 'text-sm font-bold mb-2' }">API Key</cl-text>
-				<cl-input
-					v-model="formData.apiKey"
-					placeholder="请输入 Wallhaven API Key"
-					:password="true"
-					clearable
-				></cl-input>
+				<cl-input v-model="formData.apiKey" :placeholder="t('请输入 Wallhaven API Key')" :password="true"
+					clearable></cl-input>
 				<cl-text :pt="{ className: 'text-xs text-surface-400 mt-2' }">
-					在 wallhaven.cc 账户设置中获取 API Key，用于查看 NSFW 内容和个人收藏夹
+					{{ t('在 wallhaven.cc 账户设置中获取 API Key，用于查看 NSFW 内容和个人收藏夹') }}
 				</cl-text>
 			</view>
 
 			<!-- 用户名输入 -->
 			<view class="mb-6">
-				<cl-text :pt="{ className: 'text-sm font-bold mb-2' }">用户名</cl-text>
-				<cl-input
-					v-model="formData.username"
-					placeholder="请输入 Wallhaven 用户名"
-					clearable
-				></cl-input>
+				<cl-text :pt="{ className: 'text-sm font-bold mb-2' }">{{ t('用户名') }}</cl-text>
+				<cl-input v-model="formData.username" :placeholder="t('请输入 Wallhaven 用户名')" clearable></cl-input>
 				<cl-text :pt="{ className: 'text-xs text-surface-400 mt-2' }">
-					用于查看在线收藏夹
+					{{ t('用于查看在线收藏夹') }}
 				</cl-text>
 			</view>
 		</view>
 
 		<cl-footer>
 			<view class="flex flex-row p-3">
-				<cl-button
-					type="primary"
-					size="large"
-					:pt="{ className: 'flex-1 !rounded-xl h-[80rpx]' }"
-					:loading="saving"
-					@tap="save"
-				>保存</cl-button>
+				<cl-button type="primary" size="large" :pt="{ className: 'flex-1 !rounded-xl h-[80rpx]' }"
+					:loading="saving" @tap="save">{{ t('保存') }}</cl-button>
 			</view>
 		</cl-footer>
 	</cl-page>
@@ -47,9 +46,36 @@
 import { ref, onMounted } from "vue";
 import { useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import { t, locale, setLocale } from "@/locale";
 
 const ui = useUi();
 const { wallhaven } = useStore();
+
+// 语言选项类型
+type LanguageOption = {
+	label: string;
+	value: string;
+};
+
+// 语言选项
+const languages: LanguageOption[] = [
+	{ label: "简体中文", value: "zh-cn" },
+	{ label: "English", value: "en" }
+];
+
+// 当前语言
+const currentLocale = ref<string>(locale.value);
+
+// 切换语言
+function changeLocale(lang: string) {
+	currentLocale.value = lang;
+	setLocale(lang);
+
+	ui.showToast({
+		message: t('语言已切换'),
+		icon: "check-line"
+	});
+}
 
 // 表单数据类型
 type SettingsFormData = {
@@ -75,7 +101,7 @@ async function save() {
 		wallhaven.setUsername(formData.value.username);
 
 		ui.showToast({
-			message: "保存成功",
+			message: t('保存成功'),
 			icon: "check-line"
 		});
 
@@ -85,7 +111,7 @@ async function save() {
 		}, 500);
 	} catch (err: any) {
 		ui.showToast({
-			message: err.message ?? "保存失败"
+			message: err.message ?? t('保存失败')
 		});
 	} finally {
 		saving.value = false;
@@ -96,5 +122,6 @@ async function save() {
 onMounted(() => {
 	formData.value.apiKey = wallhaven.apiKey.value;
 	formData.value.username = wallhaven.username.value;
+	currentLocale.value = locale.value;
 });
 </script>

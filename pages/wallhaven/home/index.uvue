@@ -1,61 +1,39 @@
 <template>
-	<cl-page
-		:back-top="true"
-	>
+	<cl-page :back-top="true" :show-theme="true">
 		<!-- 顶部导航栏 -->
-		<cl-topbar
-			fixed
-			:show-back="false"
-			safe-area-top
-			:pt="{
-				className: '!z-50'
-			}"
-		>
+		<cl-topbar fixed :show-back="false" safe-area-top :pt="{
+			className: '!z-50'
+		}">
 			<view class="flex flex-row items-center p-3 flex-1 w-full">
 				<!-- 左侧菜单按钮（搜索模式下隐藏） -->
-				<view
-					v-if="!showSearchHistory"
+				<view v-if="!showSearchHistory"
 					class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
-					@tap="openLeftDrawer"
-				>
+					@tap="openLeftDrawer">
 					<cl-icon name="menu-line" :size="40"></cl-icon>
 				</view>
 
 				<!-- 中间搜索框 -->
 				<view class="flex-1 mx-3" @tap="onSearchFocus">
-					<cl-input
-						v-model="searchKeyword"
-						placeholder="搜索壁纸..."
-						prefix-icon="search-line"
-						clearable
-						:pt="{
-							className: 'rounded-full'
-						}"
-						@confirm="onSearch"
-					></cl-input>
+					<cl-input v-model="searchKeyword" :placeholder="t('搜索壁纸...')" prefix-icon="search-line" clearable
+						:pt="{ className: 'rounded-full' }" @confirm="onSearch"></cl-input>
 				</view>
 
 				<!-- 右侧按钮：搜索模式下显示取消，正常模式显示刷新和筛选 -->
 				<view v-if="showSearchHistory">
-					<cl-text
-						:pt="{ className: 'text-primary-500' }"
-						@tap="cancelSearch"
-					>取消
+					<cl-text :pt="{ className: 'text-primary-500' }" @tap="cancelSearch">{{ t('取消') }}
 					</cl-text>
 				</view>
 				<view v-else class="flex flex-row items-center">
 					<!-- 刷新按钮 -->
 					<view
 						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700 mr-2"
-						@tap="onRefreshClick"
-					>
+						@tap="onRefreshClick">
 						<cl-icon name="refresh-line" :size="40"></cl-icon>
 					</view>
 					<!-- 筛选按钮 -->
 					<view
 						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
-						@tap="openRightDrawer"
-					>
+						@tap="openRightDrawer">
 						<cl-icon name="filter-line" :size="40"></cl-icon>
 					</view>
 				</view>
@@ -63,30 +41,26 @@
 		</cl-topbar>
 
 		<!-- 搜索历史组件 -->
-		<search-history
-			:visible="showSearchHistory"
-			@search="onHistorySearch"
-			@close="showSearchHistory = false"
-		></search-history>
+		<search-history :visible="showSearchHistory" @search="onHistorySearch"
+			@close="showSearchHistory = false"></search-history>
 
 		<!-- 壁纸列表（带过渡动画） -->
-		<view v-show="!showSearchHistory" class="wallpaper-container p-2">
-			<cl-waterfall ref="waterfallRef" :column="2" :gutter="12">
+		<view v-show="!showSearchHistory" class="wallpaper-container">
+			<cl-waterfall ref="waterfallRef" :column="2" :gutter="0">
 				<template #item="{ item }">
-					<wallpaper-item
-						:item="item"
-						:favorited="isFavorited(item)"
-						@tap="toDetail(item)"
-						@favorite="onFavorite"
-					></wallpaper-item>
+					<wallpaper-item :item="item" :favorited="isFavorited(item)" @tap="toDetail(item)"
+						@favorite="onFavorite"></wallpaper-item>
 				</template>
 			</cl-waterfall>
 
 			<!-- 空状态提示 -->
 			<view v-if="isEmpty && !loading" class="empty-state flex flex-col items-center justify-center py-20">
-				<cl-icon name="image-line" :size="120" :pt="{ className: 'text-surface-300 dark:!text-surface-600' }"></cl-icon>
-				<cl-text :pt="{ className: 'mt-4 text-surface-400 dark:!text-surface-500' }">暂无搜索结果</cl-text>
-				<cl-text :pt="{ className: 'mt-2 text-sm text-surface-300 dark:!text-surface-600' }">换个关键词或调整筛选条件试试</cl-text>
+				<cl-icon name="image-line" :size="120"
+					:pt="{ className: 'text-surface-300 dark:!text-surface-600' }"></cl-icon>
+				<cl-text :pt="{ className: 'mt-4 text-surface-400 dark:!text-surface-500' }">{{ t('暂无搜索结果') }}</cl-text>
+				<cl-text :pt="{ className: 'mt-2 text-sm text-surface-300 dark:!text-surface-600' }">{{
+					t('换个关键词或调整筛选条件试试')
+				}}</cl-text>
 			</view>
 
 			<view class="h-12 flex flex-row items-center justify-center w-full">
@@ -98,10 +72,7 @@
 		<menu-drawer v-model:visible="leftDrawerVisible"></menu-drawer>
 
 		<!-- 右侧筛选抽屉组件 -->
-		<filter-drawer
-			v-model:visible="rightDrawerVisible"
-			@confirm="refreshList"
-		></filter-drawer>
+		<filter-drawer v-model:visible="rightDrawerVisible" @confirm="refreshList"></filter-drawer>
 	</cl-page>
 </template>
 
@@ -109,6 +80,7 @@
 import { ref, onMounted } from "vue";
 import { router, useStore } from "@/cool";
 import { useUi } from "@/uni_modules/cool-ui";
+import { t } from "@/locale";
 import type { Wallpaper } from "@/types/wallhaven";
 import WallpaperItem from "../components/wallpaper-item.uvue";
 import FilterDrawer from "./components/FilterDrawer.uvue";
@@ -304,11 +276,11 @@ function onFavorite(item: any) {
 	if (id != null) {
 		if (store.isFavorite(id)) {
 			store.removeFavorite(id);
-			ui.showToast({ message: '已取消收藏' });
+			ui.showToast({ message: t('已取消收藏') });
 		} else {
 			// 直接使用从 UTSJSONObject 中获取的 id
 			store.addFavorite(id);
-			ui.showToast({ message: '已添加到收藏' });
+			ui.showToast({ message: t('已添加到收藏') });
 		}
 	}
 }
@@ -339,3 +311,8 @@ onMounted(() => {
 	refreshList();
 });
 </script>
+
+<style scoped>
+/* 搜索输入框 placeholder 样式 */
+/* 移除不支持的样式，改用 placeholder-style 属性来控制 placeholder 文本大小 */
+</style>

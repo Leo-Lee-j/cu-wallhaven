@@ -251,9 +251,6 @@ export class WallhavenStore {
 	 */
 	private buildCategories(): string {
 		const cats = this.filterForm.value?.categories ?? ["general", "anime", "people"];
-		if (cats == null || !Array.isArray(cats)) {
-			return "111";
-		}
 		return [
 			cats.indexOf("general") >= 0 ? "1" : "0",
 			cats.indexOf("anime") >= 0 ? "1" : "0",
@@ -266,9 +263,6 @@ export class WallhavenStore {
 	 */
 	private buildPurity(): string {
 		const purity = this.filterForm.value?.purity ?? ["sfw"];
-		if (purity == null || !Array.isArray(purity)) {
-			return "100";
-		}
 		return [
 			purity.indexOf("sfw") >= 0 ? "1" : "0",
 			purity.indexOf("sketchy") >= 0 ? "1" : "0",
@@ -306,7 +300,7 @@ export class WallhavenStore {
 		}
 
 		// 添加用户手动选择的宽高比，去重
-		if (customRatios != null && Array.isArray(customRatios) && customRatios.length > 0) {
+		if (customRatios.length > 0) {
 			console.log('[筛选] 添加用户手动选择的宽高比:', customRatios);
 			for (const ratio of customRatios) {
 				if (!ratioList.includes(ratio)) {
@@ -331,32 +325,32 @@ export class WallhavenStore {
 		const p = params as UTSJSONObject;
 
 		// 关键词
-		const q = (p != null ? p['q'] : null) as string | null;
+		const q = p['q'] as string | null;
 		if (q != null && q !== "") {
 			queryParts.push(`q=${encodeURIComponent(q)}`);
 		}
 
 		// 分类
-		const categories = (p != null ? p['categories'] : null) as string | null;
+		const categories = p['categories'] as string | null;
 		queryParts.push(`categories=${categories ?? this.buildCategories()}`);
 
 		// 纯度
-		const purity = (p != null ? p['purity'] : null) as string | null;
+		const purity = p['purity'] as string | null;
 		queryParts.push(`purity=${purity ?? this.buildPurity()}`);
 
 		// 排序
-		const sorting = (p != null ? p['sorting'] : null) as string | null;
+		const sorting = p['sorting'] as string | null;
 		queryParts.push(`sorting=${sorting ?? this.filterForm.value?.sorting ?? "date_added"}`);
 
 		// 排序顺序
-		const order = (p != null ? p['order'] : null) as string | null;
+		const order = p['order'] as string | null;
 		if (order != null) {
 			queryParts.push(`order=${order}`);
 		}
 
 		// 热门时间范围
 		if (sorting === "toplist" || this.filterForm.value?.sorting === "toplist") {
-			const topRange = (p != null ? p['topRange'] : null) as string | null;
+			const topRange = p['topRange'] as string | null;
 			queryParts.push(`topRange=${topRange ?? this.filterForm.value?.topRange ?? "1M"}`);
 		}
 
@@ -373,13 +367,13 @@ export class WallhavenStore {
 		}
 
 		// 页码
-		const page = (p != null ? p['page'] : null) as number | null;
+		const page = p['page'] as number | null;
 		if (page != null) {
 			queryParts.push(`page=${page.toString()}`);
 		}
 
 		// 随机种子
-		const seed = (p != null ? p['seed'] : null) as string | null;
+		const seed = p['seed'] as string | null;
 		if (seed != null && seed !== "") {
 			queryParts.push(`seed=${seed}`);
 		}

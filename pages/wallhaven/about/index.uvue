@@ -3,23 +3,19 @@
 		<view class="p-5 flex flex-col items-center">
 			<!-- Logo -->
 			<view class="rounded-2xl mb-4">
-				<image 
-					src="/static/wallhaven-logo.png" 
-					mode="aspectFit"
-					class="w-32 h-32"
-				></image>
+				<image src="/static/wallhaven-logo.png" mode="aspectFit" class="w-32 h-32"></image>
 			</view>
 
 			<!-- 应用名称 -->
 			<cl-text :pt="{ className: 'text-2xl font-bold mb-2' }">Wallhaven</cl-text>
-			<cl-text :pt="{ className: 'text-surface-400 mb-6' }">壁纸浏览器</cl-text>
+			<cl-text :pt="{ className: 'text-surface-400 mb-6' }">{{ t('壁纸浏览器') }}</cl-text>
 
 			<!-- 版本信息 -->
 			<cl-list :pt="{ className: 'w-full mb-4' }">
-				<cl-list-item label="版本">
+				<cl-list-item :label="t('版本')">
 					<cl-text>1.0.0</cl-text>
 				</cl-list-item>
-				<cl-list-item label="框架">
+				<cl-list-item :label="t('框架')">
 					<cl-text>cool-unix</cl-text>
 				</cl-list-item>
 			</cl-list>
@@ -27,25 +23,20 @@
 			<!-- 说明 -->
 			<view class="w-full bg-surface-50 dark:!bg-surface-800 rounded-xl p-4">
 				<cl-text :pt="{ className: 'text-sm leading-6' }">
-					本应用基于 Wallhaven API 开发，提供高质量壁纸浏览和下载功能。
+					{{ t('本应用基于 Wallhaven API 开发，提供高质量壁纸浏览和下载功能。') }}
 				</cl-text>
 				<cl-text :pt="{ className: 'text-sm leading-6 mt-2' }">
-					Wallhaven 是一个免费的壁纸分享社区，拥有大量高质量的壁纸资源。
+					{{ t('Wallhaven 是一个免费的壁纸分享社区，拥有大量高质量的壁纸资源。') }}
 				</cl-text>
 				<cl-text :pt="{ className: 'text-sm leading-6 mt-2 text-surface-400' }">
-					所有壁纸版权归原作者所有。
+					{{ t('所有壁纸版权归原作者所有。') }}
 				</cl-text>
 			</view>
 
 			<!-- 外部链接 -->
 			<cl-list :pt="{ className: 'w-full mt-4' }">
-				<cl-list-item
-					label="访问 Wallhaven"
-					icon="tuichudenglu"
-					arrow
-					hoverable
-					@tap="openWallhaven"
-				></cl-list-item>
+				<cl-list-item :label="t('访问 Wallhaven')" icon="tuichudenglu" arrow hoverable
+					@tap="openWallhaven"></cl-list-item>
 			</cl-list>
 		</view>
 	</cl-page>
@@ -55,6 +46,7 @@
 // #ifdef APP
 import { openSchema } from '@/uni_modules/uts-openSchema'
 // #endif
+import { t } from "@/locale";
 
 // 打开 Wallhaven 官网
 function openWallhaven() {
@@ -62,7 +54,7 @@ function openWallhaven() {
 	// 使用外部浏览器打开 Wallhaven 官网
 	openSchema('https://wallhaven.cc');
 	// #endif
-	
+
 	// #ifndef APP
 	// 非 APP 环境，复制链接到剪贴板
 	uni.setClipboardData({
@@ -70,7 +62,7 @@ function openWallhaven() {
 		showToast: false,
 		success: () => {
 			uni.showToast({
-				title: "链接已复制",
+				title: t("链接已复制"),
 				icon: "success"
 			});
 		}
