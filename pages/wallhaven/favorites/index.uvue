@@ -10,8 +10,8 @@
 		<view v-else-if="favorites.length > 0">
 			<cl-waterfall ref="waterfallRef" :column="2" :gutter="0">
 				<template #item="{ item }">
-					<wallpaper-item :item="item" :show-delete="true" @tap="toDetail(item)"
-						@delete="removeFavorite(item)"></wallpaper-item>
+					<wallpaper-item :item="item" :favorited="true" @tap="toDetail(item)"
+						@favorite="onFavorite"></wallpaper-item>
 				</template>
 			</cl-waterfall>
 
@@ -102,29 +102,22 @@ function toDetail(item: any) {
 	router.to(`/pages/wallhaven/detail/index?id=${obj.getString('id')}`);
 }
 
-// 取消收藏
-function removeFavorite(item: any) {
+// 处理收藏事件（在本地收藏夹中，点击收藏按钮意味着取消收藏）
+function onFavorite(item: any) {
 	const obj = item as UTSJSONObject;
 	const id = obj.getString('id') ?? "";
 
-	ui.showConfirm({
-		title: t("提示"),
-		message: t("确定取消收藏吗？"),
-		callback(action) {
-			if (action === "confirm") {
-				wallhaven.removeFavorite(id);
+	// 直接取消收藏，不需要确认
+	wallhaven.removeFavorite(id);
 
-				// 从列表中移除
-				const index = favorites.value.findIndex((w) => w.getString('id') === id);
-				if (index > -1) {
-					favorites.value.splice(index, 1);
-					waterfallRef.value?.remove(id);
-				}
+	// 从列表中移除
+	const index = favorites.value.findIndex((w) => w.getString('id') === id);
+	if (index > -1) {
+		favorites.value.splice(index, 1);
+		waterfallRef.value?.remove(id);
+	}
 
-				ui.showToast({ message: t("已取消收藏") });
-			}
-		}
-	});
+	ui.showToast({ message: t("已取消收藏") });
 }
 
 // 初始化
