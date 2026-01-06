@@ -406,8 +406,7 @@ export class WallhavenStore {
 				method: "GET",
 				header: this.buildHeaders(),
 				success: (res) => {
-					if (res.statusCode === 200) {
-						// 使用 any 中间类型绕过 UTS 类型检查
+					if ((res.statusCode as number) == 200) {
 						resolve(res.data as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));
@@ -425,7 +424,7 @@ export class WallhavenStore {
 	 */
 	async getWallpaper(id: string): Promise<any> {
 		let url = `${API_BASE}/w/${id}`;
-		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
+		if (this.apiKey.value !== '') {
 			url += `?apikey=${this.apiKey.value}`;
 		}
 
@@ -435,8 +434,7 @@ export class WallhavenStore {
 				method: "GET",
 				header: this.buildHeaders(),
 				success: (res) => {
-					if (res.statusCode === 200) {
-						// 从响应中提取 data 字段
+					if ((res.statusCode as number) == 200) {
 						const response = res.data as UTSJSONObject;
 						resolve(response['data'] as any);
 					} else {
@@ -458,7 +456,7 @@ export class WallhavenStore {
 		if (username !== null && username !== "") {
 			url += `/${username}`;
 		}
-		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
+		if (this.apiKey.value !== '') {
 			url += `?apikey=${this.apiKey.value}`;
 		}
 
@@ -468,8 +466,7 @@ export class WallhavenStore {
 				method: "GET",
 				header: this.buildHeaders(),
 				success: (res) => {
-					if (res.statusCode === 200) {
-						// 从响应中提取 data 字段
+					if ((res.statusCode as number) == 200) {
 						const response = res.data as UTSJSONObject;
 						resolve(response['data'] as any);
 					} else {
@@ -492,7 +489,7 @@ export class WallhavenStore {
 		page: number = 1
 	): Promise<any> {
 		let url = `${API_BASE}/collections/${username}/${collectionId}?page=${page}`;
-		if (this.apiKey.value !== '' && this.apiKey.value !== null) {
+		if (this.apiKey.value !== '') {
 			url += `&apikey=${this.apiKey.value}`;
 		}
 
@@ -502,8 +499,7 @@ export class WallhavenStore {
 				method: "GET",
 				header: this.buildHeaders(),
 				success: (res) => {
-					if (res.statusCode === 200) {
-						// 直接返回 res.data
+					if ((res.statusCode as number) == 200) {
 						resolve(res.data as any);
 					} else {
 						reject(new Error(`请求失败: ${res.statusCode}`));

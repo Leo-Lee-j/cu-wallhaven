@@ -462,5 +462,69 @@
   [
     "链接已复制",
     "Link copied"
+  ],
+  [
+    "当前版本",
+    "Current Version"
+  ],
+  [
+    "检查更新",
+    "Check for Updates"
+  ],
+  [
+    "发现新版本",
+    "New Version Available"
+  ],
+  [
+    "最新版本",
+    "Latest Version"
+  ],
+  [
+    "是否前往下载？",
+    "Go to download?"
+  ],
+  [
+    "已是最新版本",
+    "Already up to date"
+  ],
+  [
+    "检查更新失败",
+    "Update check failed"
+  ],
+  [
+    "下载链接已复制",
+    "Download link copied"
+  ],
+  [
+    "立即下载安装？",
+    "Download and install now?"
+  ],
+  [
+    "立即下载",
+    "Download Now"
+  ],
+  [
+    "稍后再说",
+    "Later"
+  ],
+  [
+    "准备下载...",
+    "Preparing download..."
+  ],
+  [
+    "正在下载",
+    "Downloading"
+  ],
+  [
+    "正在下载更新...",
+    "Downloading update..."
+  ],
+  [
+    "下载完成，请安装",
+    "Download complete, please install"
+  ],
+  [
+    "未找到下载链接",
+    "Download link not found"
   ]
 ]
