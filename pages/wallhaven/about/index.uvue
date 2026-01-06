@@ -13,10 +13,17 @@
 			<!-- 版本信息 -->
 			<cl-list :pt="{ className: 'w-full mb-4' }">
 				<cl-list-item :label="t('版本')">
-					<cl-text>1.0.0</cl-text>
+					<cl-text>{{ appVersion }}</cl-text>
 				</cl-list-item>
 				<cl-list-item :label="t('框架')">
 					<cl-text>cool-unix</cl-text>
+				</cl-list-item>
+
+				<!-- 检查更新 -->
+				<cl-list-item :label="t('检查更新')" arrow hoverable @tap="checkUpdate">
+					<view v-if="checking" class="flex items-center">
+						<cl-loading :size="30"></cl-loading>
+					</view>
 				</cl-list-item>
 			</cl-list>
 
@@ -43,10 +50,27 @@
 </template>
 
 <script lang="ts" setup>
+import { ref } from "vue";
 // #ifdef APP
 import { openSchema } from '@/uni_modules/uts-openSchema'
 // #endif
 import { t } from "@/locale";
+import { useUi } from "@/uni_modules/cool-ui";
+import { checkForUpdates, downloadAndInstall, formatFileSize, getCurrentVersion } from "@/cool/utils/update-checker";
+import type { UpdateCheckResult } from "@/cool/utils/update-checker";
+
+const ui = useUi();
+
+// 应用版本
+const appVersion = ref<string>(getCurrentVersion());
+
+// 检查更新中
+const checking = ref(false);
+
+// 下载进度
+const downloadProgress = ref(0);
+const downloadStatus = ref('');
+const isDownloading = ref(false);
 
 // 打开 Wallhaven 官网
 function openWallhaven() {
@@ -68,5 +92,138 @@ function openWallhaven() {
 		}
 	});
 	// #endif
+}
+
+// 开始下载
+async function startDownload(downloadUrl: string) {
+	isDownloading.value = true;
+	downloadProgress.value = 0;
+
+	// 显示下载进度提示
+	ui.showLoading(t('正在下载更新...'));
+
+	try {
+		await downloadAndInstall(
+			downloadUrl,
+			(progress: number, totalSize: number, downloadedSize: number) => {
+				// 更新下载进度
+				downloadProgress.value = progress;
+				const downloaded = formatFileSize(downloadedSize);
+				const total = formatFileSize(totalSize);
+				downloadStatus.value = `${downloaded} / ${total}`;
+
+				// 输出到控制台
+				console.log(`下载进度: ${progress.toFixed(0)}% (${downloadStatus.value})`);
+			}
+		);
+
+		// 下载并安装成功
+		ui.hideLoading();
+		ui.showToast({
+			message: t('下载完成，请安装'),
+			icon: "check-line"
+		});
+	} catch (err: any) {
+		console.error('下载失败:', err);
+		ui.hideLoading();
+		ui.showToast({
+			message: err.message ?? t('下载失败')
+		});
+	} finally {
+		isDownloading.value = false;
+		downloadProgress.value = 0;
+	}
+}
+
+// 显示更新对话框（支持直接下载）
+function showUpdateDialog(result: UpdateCheckResult, downloadUrl: string) {
+	ui.showConfirm({
+		title: t("发现新版本"),
+		message: `${t('当前版本')}: ${result.currentVersion}\n${t('最新版本')}: ${result.latestVersion}\n\n${t('立即下载安装？')}`,
+		confirmText: t('立即下载'),
+		cancelText: t('稍后再说'),
+		callback(action) {
+			if (action === "confirm") {
+				// 开始下载
+				startDownload(downloadUrl);
+			}
+		}
+	});
+}
+
+// 显示浏览器更新对话框
+function showBrowserUpdateDialog(result: UpdateCheckResult, releaseUrl: string) {
+	ui.showConfirm({
+		title: t("发现新版本"),
+		message: `${t('当前版本')}: ${result.currentVersion}\n${t('最新版本')}: ${result.latestVersion}\n\n${t('是否前往下载？')}`,
+		callback(action) {
+			if (action === "confirm") {
+				// #ifdef APP-PLUS
+				plus.runtime.openURL(releaseUrl);
+				// #endif
+
+				// #ifndef APP-PLUS
+				uni.setClipboardData({
+					data: releaseUrl,
+					success: () => {
+						ui.showToast({ message: t('下载链接已复制') });
+					}
+				});
+				// #endif
+			}
+		}
+	});
+}
+
+// 检查更新
+async function checkUpdate() {
+	if (checking.value || isDownloading.value) return;
+
+	checking.value = true;
+
+	try {
+		const result = await checkForUpdates();
+
+		if (result.hasUpdate) {
+			// 有新版本，显示更新对话框
+			const downloadUrl = result.downloadUrl != null ? result.downloadUrl : "";
+			const releaseUrl = result.releaseUrl != null ? result.releaseUrl : "";
+
+			// 判断平台和是否有下载链接
+			// #ifdef APP-ANDROID
+			if (downloadUrl !== "") {
+				// Android 平台且有下载链接，提供直接下载选项
+				showUpdateDialog(result, downloadUrl);
+			} else if (releaseUrl !== "") {
+				// 没有下载链接，打开 Release 页面
+				showBrowserUpdateDialog(result, releaseUrl);
+			} else {
+				ui.showToast({ message: t('未找到下载链接') });
+			}
+			// #endif
+
+			// #ifndef APP-ANDROID
+			// 非 Android 平台，只能打开浏览器
+			if (releaseUrl !== "") {
+				showBrowserUpdateDialog(result, releaseUrl);
+			} else {
+				ui.showToast({ message: t('未找到下载链接') });
+			}
+			// #endif
+		} else {
+			// 已是最新版本
+			ui.showToast({
+				message: t('已是最新版本'),
+				icon: "check-line"
+			});
+		}
+	} catch (err: any) {
+		console.error('检查更新失败:', err);
+		ui.showToast({
+			message: err.message ?? t('检查更新失败')
+		});
+	} finally {
+		checking.value = false;
+	}
 }
 </script>
