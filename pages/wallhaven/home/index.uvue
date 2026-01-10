@@ -32,9 +32,15 @@
 					</view>
 					<!-- 筛选按钮 -->
 					<view
-						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
+						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700 mr-2"
 						@tap="openRightDrawer">
 						<cl-icon name="filter-line" :size="40"></cl-icon>
+					</view>
+					<!-- 页数显示 -->
+					<view
+						class="h-7 px-3 rounded-full bg-surface-200 dark:!bg-surface-700 flex flex-row items-center justify-center"
+					>
+						<text class="text-xs text-surface-500 dark:!text-surface-400">{{ displayCurrentPage }}/{{ totalPages }}</text>
 					</view>
 				</view>
 			</view>
@@ -73,15 +79,6 @@
 
 		<!-- 右侧筛选抽屉组件 -->
 		<filter-drawer v-model:visible="rightDrawerVisible" @confirm="refreshList"></filter-drawer>
-
-		<!-- 分页信息悬浮球 -->
-		<cl-float-view :left="20" :bottom="90" :size="15">
-			<view
-				class="w-[40px] h-[40px] rounded-full bg-surface-200 dark:!bg-surface-700 flex flex-col items-center justify-center"
-			>
-				<text class="text-xs text-surface-500 dark:!text-surface-400">{{ displayCurrentPage }} / {{ totalPages }}</text>
-			</view>
-		</cl-float-view>
 	</cl-page>
 </template>
 
