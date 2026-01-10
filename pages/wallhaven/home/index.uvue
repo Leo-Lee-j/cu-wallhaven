@@ -32,9 +32,15 @@
 					</view>
 					<!-- 筛选按钮 -->
 					<view
-						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700"
+						class="h-9 w-9 rounded-full flex flex-row items-center justify-center bg-surface-100 dark:!bg-surface-700 mr-2"
 						@tap="openRightDrawer">
 						<cl-icon name="filter-line" :size="40"></cl-icon>
+					</view>
+					<!-- 页数显示 -->
+					<view
+						class="h-7 px-3 rounded-full bg-surface-200 dark:!bg-surface-700 flex flex-row items-center justify-center"
+					>
+						<text class="text-xs text-surface-500 dark:!text-surface-400">{{ displayCurrentPage }}/{{ totalPages }}</text>
 					</view>
 				</view>
 			</view>
@@ -111,6 +117,10 @@ const loading = ref(false);
 const finished = ref(false);
 const isEmpty = ref(false); // 无数据状态
 
+// 分页显示信息
+const totalPages = ref(1);
+const displayCurrentPage = ref(1);
+
 // 当前页码
 let currentPage = 1;
 
@@ -168,6 +178,12 @@ async function loadData() {
 				}
 			}
 
+			// 更新分页信息
+			if (meta != null) {
+				totalPages.value = meta?.getNumber('last_page') ?? 1;
+				displayCurrentPage.value = currentPage;
+			}
+
 			// 检查是否最后一页
 			if (meta != null) {
 				const lastPage = meta?.getNumber('last_page') ?? 1;
@@ -197,6 +213,8 @@ async function refreshList() {
 	randomSeed = "";
 	finished.value = false;
 	isEmpty.value = false; // 重置空状态
+	totalPages.value = 1;
+	displayCurrentPage.value = 1;
 	waterfallRef.value?.clear();
 	await loadData();
 }
@@ -291,6 +309,9 @@ onPullDownRefresh(() => {
 	currentPage = 1;
 	randomSeed = "";
 	finished.value = false;
+	isEmpty.value = false;
+	totalPages.value = 1;
+	displayCurrentPage.value = 1;
 	// 清空瀑布流
 	waterfallRef.value?.clear();
 
