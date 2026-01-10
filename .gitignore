@@ -19,3 +19,4 @@ npm-debug.log*
 .vscode
 # Project exclude paths
 /uni_modules/cool-ui/index.d.ts
+AGENTS.md

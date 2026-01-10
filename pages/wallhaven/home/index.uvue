@@ -73,6 +73,15 @@
 
 		<!-- 右侧筛选抽屉组件 -->
 		<filter-drawer v-model:visible="rightDrawerVisible" @confirm="refreshList"></filter-drawer>
+
+		<!-- 分页信息悬浮球 -->
+		<cl-float-view :left="20" :bottom="90" :size="15">
+			<view
+				class="w-[40px] h-[40px] rounded-full bg-surface-200 dark:!bg-surface-700 flex flex-col items-center justify-center"
+			>
+				<text class="text-xs text-surface-500 dark:!text-surface-400">{{ displayCurrentPage }} / {{ totalPages }}</text>
+			</view>
+		</cl-float-view>
 	</cl-page>
 </template>
 
@@ -110,6 +119,10 @@ const rightDrawerVisible = ref(false);
 const loading = ref(false);
 const finished = ref(false);
 const isEmpty = ref(false); // 无数据状态
+
+// 分页显示信息
+const totalPages = ref(1);
+const displayCurrentPage = ref(1);
 
 // 当前页码
 let currentPage = 1;
@@ -168,6 +181,12 @@ async function loadData() {
 				}
 			}
 
+			// 更新分页信息
+			if (meta != null) {
+				totalPages.value = meta?.getNumber('last_page') ?? 1;
+				displayCurrentPage.value = currentPage;
+			}
+
 			// 检查是否最后一页
 			if (meta != null) {
 				const lastPage = meta?.getNumber('last_page') ?? 1;
@@ -197,6 +216,8 @@ async function refreshList() {
 	randomSeed = "";
 	finished.value = false;
 	isEmpty.value = false; // 重置空状态
+	totalPages.value = 1;
+	displayCurrentPage.value = 1;
 	waterfallRef.value?.clear();
 	await loadData();
 }
@@ -291,6 +312,9 @@ onPullDownRefresh(() => {
 	currentPage = 1;
 	randomSeed = "";
 	finished.value = false;
+	isEmpty.value = false;
+	totalPages.value = 1;
+	displayCurrentPage.value = 1;
 	// 清空瀑布流
 	waterfallRef.value?.clear();
 
